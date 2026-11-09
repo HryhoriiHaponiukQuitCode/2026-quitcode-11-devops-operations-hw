@@ -1,0 +1,281 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+#
+# CodeRabbit config — review of Workshop 11 submission PRs ("DevOps and operations").
+# The work itself lives in each participant's own repository (model v2, as in WS6–WS10): the PM's requirements repo
+# <pm>/<team-slug>-spec (docs/operations.md with SLOs, SEV1–3, RPO/RTO and alert recipients; release acceptance on
+# every developer's staging signed as comments in the developer repos; review of the developer's postmortem and
+# runbook; docs/incident-message.md, docs/demo-day.md, docs/cost-note.md) and every developer's own implementation
+# repo <dev>/<team-slug> (D0 with next >= 16.4.5; staging branch with a branch-only variable, smoke for every
+# deployment with the Vercel protection bypass, PM access to staging, release v1.0.0; a human alert from a red smoke,
+# an error tracker, an llm.call log without user text plus a test; an incident drill on staging with a propose-only
+# agent transcript, a blameless postmortem, docs/runbook.md and a new CI check; Dependabot with cooldown, .npmrc with
+# min-release-age, actions pinned by SHA, push protection and CodeQL). Screenshots live in the developer repo,
+# usually under docs/ops/. Optional bonus: an encrypted backup with a restore drill, or a read-only on-call assistant.
+# The instructor's pipeline grades the repo at the main SHA from the submission file. Here CodeRabbit checks ONLY the
+# submission PR: one new file submissions/<team-slug>/<github-login>.md, its fields, and that nothing else changed.
+# Every check is STATIC over the diff and the PR description: no network, no npm, no tests, no model calls, no
+# cloning of linked repositories.
+# Limits: custom check names < 50 chars, tone_instructions ≤ 250 chars — otherwise CodeRabbit
+# silently ignores the WHOLE file (tells: review in English, docstring check reappears).
+
+language: "uk-UA"
+tone_instructions: >-
+  Ментор курсу. Українською, коротко й доброзичливо. Перевіряєш лише файл здачі WS11 і опис PR.
+  Статуси: ✅ зроблено, ⚠️ частково, ❌ бракує.
+
+early_access: false
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  changed_files_summary: true
+  sequence_diagrams: false
+  in_progress_fortune: false
+
+  auto_review:
+    enabled: true
+    drafts: true
+    base_branches:
+      - ".*"
+    ignore_title_keywords:
+      - "WIP"
+      - "[skip review]"
+    ignore_usernames:
+      - "dependabot[bot]"
+      - "renovate[bot]"
+      - "github-actions[bot]"
+
+  # Every path of the repository is listed, so that changes outside submissions/ are visible
+  # to the "nothing else changed" check.
+  path_filters:
+    - "submissions/**"
+    - "README.md"
+    - "AGENTS.md"
+    - "CLAUDE.md"
+    - "LICENSE"
+    - "docs/**"
+    - "materials/**"
+    - ".github/**"
+    - ".coderabbit.yaml"
+    - ".gitignore"
+    - ".gitattributes"
+    - "**"
+
+  path_instructions:
+    - path: "submissions/*/*.md"
+      instructions: |
+        Файл здачі WS11. Статичне рев'ю, посилань не відкривай і нічого не запускай.
+        Шлях: submissions/<team-slug>/<github-login>.md; team-slug — рівно один із
+        property-workflows, therapy-scheduling, school-purchasing, leave-portal; ім'я файла
+        (без .md) збігається з полем «GitHub-логін» і, якщо видно, з логіном автора PR (без
+        урахування регістру). Розділ «Дані»: «Роль» — pm або dev; «Команда» — та сама, що тека;
+        «Ваше репо» — https://github.com/<owner>/<repo>, owner — «GitHub-логін» (інакше ⚠️); назва
+        репо для pm зазвичай <team-slug>-spec, для dev — <team-slug> (інша — ⚠️, не ❌); «SHA» — рівно
+        40 символів [0-9a-f] (коротший SHA, гілка чи тег — ❌); «Репо вимог PM» — https://github.com/<owner>/<repo>,
+        для pm — те саме, що «Ваше репо»; «Прод-URL» і «Staging-URL» — для dev https://… (зазвичай *.vercel.app),
+        для pm — «—». Адреса з x-vercel-protection-bypass — ❌: це секрет обходу захисту; інші параметри після «?»
+        в адресі prod чи staging — ⚠️ (попроси пояснити і не публікувати секрет обходу). Staging-URL, що збігається
+        з Прод-URL, — ❌.
+        Роль pm заповнює розділ «PM», а розділ «Розробник» — рівно «—»; роль dev — навпаки.
+        pm, підрозділ «Операційні вимоги»: «Сховище» — docs/operations.md або issue; «Операційні вимоги» —
+        …/blob/<SHA>/docs/operations.md або …/issues/N у «Ваше репо»; «SLO» — 2–3 рядки, у кожного ціль, де
+        міряємо і бюджет помилок («система працює стабільно», ціль без місця вимірювання чи без бюджету — ⚠️);
+        «Матриця серйозності» — SEV1–3 з прикладами; «RPO і RTO» — значення; «Хто отримує алерт» — канал і ролі
+        (chat id, телефон чи ім'я людини — ❌); «Після курсу» — Pro, пауза чи архів. Підрозділ «Приймання
+        релізу»: «Сценарій demo day для UAT» — кроки чи посилання; «UAT на staging» — рядок на кожного
+        розробника: логін, staging https://… без «?», ✅ чи ❌ крок N з issue, і посилання на коментар-підпис
+        https://github.com/<dev>/<repo>/pull/N#issuecomment-M чи …/issues/N#issuecomment-M у репо розробника
+        (owner ≠ «Ваше репо» — це нормально), або «не прийнято: <причина, дата>»; ❌ без посилання на issue — ⚠️;
+        «Відхилення від вимог» — …/issues/N у репо розробників або «відхилень немає»; «Розбір postmortem і
+        runbook» — посилання на коментарі в PR розробників або «не прийнято: …»; «Повідомлення клієнту про
+        інцидент» — …/blob/<SHA>/docs/incident-message.md. Підрозділ «Готовність до demo day і вартість»:
+        «Чекліст demo day» — …/blob/<SHA>/docs/demo-day.md; «Точки відмови з планом Б» — перелік (порожньо — ⚠️);
+        «Записка про вартість» — …/blob/<SHA>/docs/cost-note.md; «Цифри станом на» — дата (без дати — ⚠️).
+        dev, розділ «D0»: «/api/health» — https://…/api/health з тим самим хостом, що «Прод-URL»; «Зелений
+        прогін smoke» — …/actions/runs/N у «Ваше репо»; «accounts.zip на SHA» — …/blob/<SHA>/accounts.zip
+        (посилання на accounts.txt, .env чи будь-який інший файл з паролями — ❌); «Ролі тестових акаунтів» —
+        лише ролі й адреси *@example.test; «Версія next» — 16.4.5 чи новіша (16.4.4 і нижче — ❌: D0 не виконано).
+        Підрозділ «Середовища й реліз»: «Гілка staging» — …/tree/staging; «Зміни з main у staging» — …/pull/N чи
+        …/commit/<sha>; «Змінна лише для гілки staging» — назва змінної і де її видно (значення секрету — ❌);
+        «Workflow smoke деплою» — …/blob/<SHA>/.github/workflows/….yml; «Зелений smoke на деплой staging» —
+        …/actions/runs/N; «Доступ PM до staging» — спосіб і посилання на runbook;
+        «Реліз v1.0.0» — …/releases/tag/v1.0.0 у «Ваше репо» (інший тег — ⚠️); «Нотатки за категоріями» —
+        …/blob/<SHA>/.github/release.yml або опис власних; «Прод на тегу» — SHA тегу й SHA з /api/health, і вони
+        збігаються (різні — ⚠️); «Приймання PM перед тегом» — посилання на коментар (немає — ⚠️, не ❌: пасивність
+        PM балів не знімає, якщо пояснено). Підрозділ «Сигнали»: «Крок алерту» — …/blob/<SHA>/…smoke.yml#L<N>;
+        «Навмисно червоний прогін» — …/actions/runs/N; «Знімок алерту» і «Подія навмисної помилки» — файли
+        …/blob/<SHA>/… у «Ваше репо» (зазвичай docs/ops/…; зовнішній хостинг картинок — ⚠️); «Хто отримує
+        алерт» — канал і ролі (chat id — ❌); «Трекер помилок» — Sentry чи власний onRequestError і посилання на
+        файл; «Дані моделі в трекері» — заповнено; «Тестовий маршрут прибрано чи закрито» — …/pull/N; «Журнал
+        llm.call» і «Тест «без тексту користувача»» — …/blob/<SHA>/… і …/actions/runs/N. Підрозділ «Інцидент-дріл»:
+        «Сценарій» — на staging, без міграцій (дріл на проді чи з міграцією — ❌); «Сигнал і час» — прогін чи
+        подія і хвилини від поломки до алерту (без часу — ⚠️); «Профіль «лише пропонує»» —
+        …/blob/<SHA>/.claude/settings.json або інший файл профілю в .claude/ (наприклад settings.incident.json з
+        набору) — обидва варіанти нормальні; «MCP-конфіг» — …/blob/<SHA>/.mcp.json або «Supabase MCP не
+        підключали»; «Стенограма розбору» — …/blob/<SHA>/docs/incidents/…; «Виправлення людиною, не агентом» —
+        …/pull/N чи …/commit/<sha>; «Postmortem» — …/blob/<SHA>/docs/incidents/<YYYY-MM-DD>-<slug>.md; «Runbook» —
+        …/blob/<SHA>/docs/runbook.md; «Дія з postmortem → перевірка» — …/pull/N і …/actions/runs/N; «Розбір PM» —
+        посилання або «не надходило». Підрозділ «Ланцюг постачання»: «dependabot.yml», «.npmrc», «Дії за SHA» —
+        …/blob/<SHA>/…; «Dependabot запускався» — …/pull/N чи …/actions/runs/N (порожньо — ❌: рубрика D не
+        зараховує dependabot.yml без жодного запуску); «Push protection і CodeQL» — знімок …/blob/<SHA>/… чи
+        …/actions/runs/N; «next 16.4.5» — …/pull/N.
+        Розділ «Бонус» — рівно «—» або заповнений підрозділ своєї ролі (іншої — «—»). Бонус розробника: «Варіант»
+        — «резервна копія і відновлення» або «асистент чергового», поля іншого варіанта — «—»; «Workflow» —
+        …/blob/<SHA>/.github/workflows/….yml; «Прогін» — …/actions/runs/N; для копії — шифрування, строк
+        зберігання і прогін відновлення з порівнянням рядків; для асистента — …/issues/N з чернеткою, межі, ліміти
+        й вартість. Посилання на дамп бази в git (.sql, .dump, .backup, .tar без шифрування) — ❌. Частковий
+        результат з поясненням, де зупинилось і чому, — ✅, а не ❌. Бонус PM — що зроблено й посилання.
+        Посилання на accounts.zip — нормально: це зашифрований архів тестових акаунтів за схемою курсу.
+        Плейсхолдери <…>, «…» чи незаповнені коментарі-підказки замість значень — ⚠️. Повне ім'я людини
+        у файлі — ⚠️ (ім'я лише в описі PR; логіни — нормально).
+        Значення секретів чи паролі — ❌: токен бота Telegram (цифри, двокрапка, довгий рядок), chat id (зокрема
+        від'ємне число на кшталт -100…), будь-яке значення, назване токеном, ключем, секретом обходу захисту,
+        паролем чи passphrase (зокрема паролем від accounts.zip), ghp_ / github_pat_, sb_secret_, sbp_, eyJ…,
+        sk-…, рядки підключення до бази з паролем (postgresql://…), вміст accounts.txt чи .env, адреса
+        docs.google.com, email не з домену example.test. Назва змінної без значення (TELEGRAM_BOT_TOKEN,
+        TELEGRAM_CHAT_ID, VERCEL_AUTOMATION_BYPASS_SECRET, SENTRY_AUTH_TOKEN, BACKUP_PASSPHRASE,
+        SUPABASE_DB_URL) — нормально.
+
+    - path: "submissions/_template.md"
+      instructions: |
+        Шаблон здачі — матеріал курсу, учасник його не змінює. Будь-яка зміна — ❌:
+        скопіюйте шаблон у submissions/<team-slug>/<github-login>.md.
+
+    - path: "submissions/README.md"
+      instructions: |
+        Інструкція здачі — матеріал курсу. Будь-яка зміна — ❌.
+
+    - path: "submissions/*/.gitkeep"
+      instructions: |
+        Службові файли тек команд. Видалення чи зміна — ❌.
+
+    - path: "docs/**"
+      instructions: |
+        Інструкції курсу (walkthrough-dev, walkthrough-pm, prompts, release-guide, signals-guide,
+        incident-guide, cost-guide). У PR здачі не змінюються — будь-яка зміна ❌. Помилку в матеріалах
+        повідомляють окремим issue, а не в PR здачі.
+
+    - path: "materials/**"
+      instructions: |
+        Матеріали курсу для копіювання (ops-kit розробника, pm-kit PM). Будь-яка зміна в PR здачі — ❌.
+
+    - path: ".github/**"
+      instructions: |
+        Шаблон PR курсу. Будь-яка зміна в PR здачі — ❌.
+
+    - path: "README.md"
+      instructions: |
+        README курсу. Будь-яка зміна в PR здачі — ❌.
+
+    - path: "AGENTS.md"
+      instructions: |
+        Правила агента для репозиторію курсу. Будь-яка зміна в PR здачі — ❌.
+
+    - path: "CLAUDE.md"
+      instructions: |
+        Імпорт AGENTS.md для Claude Code. Будь-яка зміна в PR здачі — ❌.
+
+  pre_merge_checks:
+    docstrings:
+      mode: "off"
+
+    title:
+      mode: "warning"
+      requirements: >
+        PR title should follow: "WS11: <participant full name>" (two words, a real name, not a GitHub login).
+
+    # The built-in description check takes only `mode`; the name requirement is a custom check.
+    description:
+      mode: "warning"
+
+    custom_checks:
+      - mode: "warning"
+        name: "Опис PR: ім'я та прізвище"
+        instructions: >
+          Static review of the PR description only; do NOT review the diff or execute anything.
+          The description MUST contain a filled-in "Ім'я та Прізвище" field under the "Учасник"
+          heading with the participant's real full name (two words). An empty field, a leftover
+          placeholder or template comment, or only a GitHub login is NOT acceptable: say so and ask
+          the author to add it. Also check that "Роль" (PM or розробник) and "Команда" are filled and that the
+          Definition of Done checklist for the participant's role is filled in rather than left as
+          unchecked template boxes. PASS if all hold; FAIL otherwise. Answer in Ukrainian.
+
+      - mode: "warning"
+        name: "Лише один файл здачі"
+        instructions: >
+          Static review of the diff only. PASS only if the PR adds exactly one file and changes
+          nothing else, and that file is submissions/<team-slug>/<github-login>.md where team-slug
+          is one of property-workflows, therapy-scheduling, school-purchasing, leave-portal, and
+          github-login matches the "GitHub-логін" field inside the file (case-insensitive) and, when
+          visible, the PR author's login. FAIL if any other file is added, modified or deleted
+          (README.md, AGENTS.md, CLAUDE.md, LICENSE, docs/, materials/, .github/, .coderabbit.yaml,
+          .gitignore, .gitattributes, submissions/README.md, submissions/_template.md, .gitkeep files,
+          another participant's submission), or if the file is placed elsewhere or named differently.
+          Name every offending path. Answer in Ukrainian.
+
+      - mode: "warning"
+        name: "Поля файлу здачі заповнено"
+        instructions: >
+          Static review of the submission file only; do NOT open links or run anything. Check the
+          "Дані" section: Роль is pm or dev; Команда equals the folder name; "Ваше репо" is
+          https://github.com/<owner>/<repo> (owner should equal GitHub-логін; repo is normally
+          <team-slug>-spec for pm and <team-slug> for dev — a different owner or name is a warning to
+          mention, not a FAIL); SHA is exactly 40 lowercase hex characters (a short SHA, branch or tag
+          name is a FAIL); "Репо вимог PM" is https://github.com/<owner>/<repo> and, for pm, equals "Ваше
+          репо"; Прод-URL and Staging-URL are https URLs for dev and "—" for pm; a prod or staging URL that
+          contains x-vercel-protection-bypass is a FAIL, any other query string after "?" is a warning to explain,
+          and a Staging-URL equal to Прод-URL is a FAIL. Role pm fills the "PM" section and the "Розробник" section is exactly "—"; role dev does
+          the opposite. All links are full https:// links (pull requests /pull/N, issues /issues/N, comments
+          /issues/N#issuecomment-M or /pull/N#issuecomment-M, commits /commit/<sha>, workflow runs
+          /actions/runs/N, releases /releases/tag/v1.0.0, files /blob/... or /tree/...).
+          For pm: "Операційні вимоги" is a /blob/<SHA>/docs/operations.md or /issues/N link; "SLO" lists 2–3
+          objectives, each with a target, where it is measured and an error budget; SEV, RPO/RTO, alert
+          recipients (roles and a channel, no chat id) and the after-course plan are filled. "UAT на staging"
+          has one line per developer with a staging URL, a ✅ or ❌ result and a link to the signature comment in
+          the developer repository, or "не прийнято: <reason, date>"; "Відхилення від вимог", "Розбір postmortem
+          і runbook" and "Повідомлення клієнту про інцидент" (/blob/<SHA>/docs/incident-message.md) are filled.
+          "Чекліст demo day" links docs/demo-day.md, "Записка про вартість" links docs/cost-note.md, and "Цифри
+          станом на" gives a date.
+          For dev: the D0 block has an https://…/api/health link on the Прод-URL host, an /actions/runs/N link for
+          smoke, a /blob/<SHA>/accounts.zip link, roles with *@example.test addresses only, and a next version of
+          16.4.5 or later (16.4.4 or older is a FAIL). "Середовища й реліз": a /tree/staging link, a PR or commit
+          bringing main into staging, the branch-only variable name, the smoke workflow file, a green smoke run on
+          a staging deployment, the PM access method, a /releases/tag/v1.0.0 link, release notes, matching tag and
+          /api/health SHAs, and the PM acceptance comment. "Сигнали": the alert step line, a red run, a screenshot
+          file in "Ваше репо", the tracker choice and file, the test-route PR, the llm.call log file and its test
+          with a CI run. "Інцидент-дріл": a staging scenario without migrations, signal time and minutes to alert,
+          the profile file under .claude/ (settings.json or settings.incident.json are both fine), the transcript
+          and postmortem under docs/incidents/, a human fix PR or commit, docs/runbook.md, and a check PR plus CI
+          run. "Ланцюг постачання": dependabot.yml, a Dependabot PR or run (missing is a FAIL), .npmrc, a pinned
+          workflow, push protection and CodeQL evidence, and the next 16.4.5 PR.
+          "Бонус" is exactly "—" or the participant's role subsection is filled (the other role's subsection is
+          "—"). Developer bonus: one variant; workflow and run links; backup: encryption, retention and a restore
+          run comparing row counts; assistant: an /issues/N draft, boundaries, limits and cost. An honest partial
+          result that says where and why it stopped is a PASS. PM bonus: what was done and a link.
+          Placeholders such as <…>, "…" or untouched template comments instead of values are a FAIL.
+          List every missing or malformed field. Answer in Ukrainian.
+
+      - mode: "warning"
+        name: "Анонімізація, токени й паролі"
+        instructions: >
+          Static review of the diff only. FAIL if the submission file contains a secret value: a Telegram bot
+          token (digits, a colon and a long string), a Telegram chat id (for example a negative number such as
+          -100…), any value labelled as a token, key, bypass secret, password or passphrase (including a password
+          for accounts.zip and values of TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, VERCEL_AUTOMATION_BYPASS_SECRET,
+          SENTRY_AUTH_TOKEN, BACKUP_PASSPHRASE or SUPABASE_DB_URL), GitHub tokens ghp_ or github_pat_, sb_secret_
+          or sbp_ values, JWT-looking eyJ strings, sk- keys, database URLs with a password; any URL containing
+          x-vercel-protection-bypass (the Vercel bypass secret); the
+          contents of accounts.txt or of a .env file, or a link to them; a link to a database dump in git; a
+          docs.google.com address; an email address outside the example.test domain; a person's full name
+          (names belong only in the PR description; GitHub logins are fine); or what looks like a real client or
+          company name rather than the four team slugs and generic product words. A variable name without a
+          value is fine. A link to accounts.zip is fine: it is the course's encrypted test-accounts archive.
+          Vendor and tool names such as Supabase, Vercel, GitHub, Telegram, Sentry, Dependabot, CodeQL, Claude,
+          Anthropic, OpenRouter, CodeRabbit or 7-Zip are fine. PASS otherwise. Answer in Ukrainian.
+
+chat:
+  auto_reply: true
