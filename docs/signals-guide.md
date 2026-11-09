@@ -134,9 +134,9 @@ smoke»](prompts.md#r05).
 - зробіть це **один раз, локально**, у Git Bash, так, щоб токен не потрапив в історію команд:
 
   ```bash
-  read -rs TG_TOKEN   # вставте токен і натисніть Enter — на екрані нічого не з'явиться
-  curl -sS "https://api.telegram.org/bot${TG_TOKEN}/getUpdates"
-  unset TG_TOKEN
+  read -rs TELEGRAM_BOT_TOKEN   # вставте токен і натисніть Enter — на екрані нічого не з'явиться
+  curl -sS "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates"
+  unset TELEGRAM_BOT_TOKEN
   ```
 
 - у відповіді знайдіть блок `"chat":{"id":…` вашої групи. Службове повідомлення «бота додано в групу» бот отримує
@@ -166,13 +166,13 @@ smoke»](prompts.md#r05).
 - name: Алерт у Telegram
   if: failure()
   env:
-    TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-    TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+    TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+    TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   run: |
-    [ -n "$TG_TOKEN" ] || { echo "::warning::TELEGRAM_* не задано — алерт пропущено"; exit 0; }
+    [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ] || { echo "::warning::TELEGRAM_* не задано — алерт пропущено"; exit 0; }
     # 2>/dev/null: повідомлення curl про помилку може містити адресу з токеном
-    curl -sS --fail --max-time 15 -o /dev/null "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
-      --data-urlencode "chat_id=${TG_CHAT}" --data-urlencode "text=<що впало, середовище, посилання на прогін>" \
+    curl -sS --fail --max-time 15 -o /dev/null "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+      --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" --data-urlencode "text=<що впало, середовище, посилання на прогін>" \
       2>/dev/null || echo "::warning::Telegram не прийняв повідомлення — перевірте токен, chat id і чи бот у чаті"
 ```
 
@@ -356,8 +356,8 @@ Next.js 15.0.0; Next.js кличе цю функцію на кожну поми�
 
 Коли вичерпано денний ліміт безкоштовних моделей (50 запитів на добу на акаунт без купівлі кредитів), health зелений,
 smoke зелений, трекер мовчить: код коректно показує «помічник недоступний». Видно це **лише** в `llm.call` — частка
-`unavailable` росте. Це найімовірніший «інцидент» AI-функції на demo day. SLI для неї — частка викликів зі станом `ok`
-(див. нижче); PM записує ціль в операційних вимогах.
+`unavailable` росте. Це найімовірніший «інцидент» AI-функції на demo day. SLI для неї — частка викликів без стану `unavailable`
+(`ok`, `needs_info`, `refused` — функція відповіла; див. нижче); PM записує ціль в операційних вимогах.
 
 ## SLI, SLO і бюджет помилок
 
