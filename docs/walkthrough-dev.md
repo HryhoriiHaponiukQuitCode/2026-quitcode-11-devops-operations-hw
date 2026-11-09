@@ -315,14 +315,16 @@ runbook на кроці 4).
    повідомлення. Чекали довше 10 хвилин, а сигналу немає — це вже знахідка для postmortem.
 6. **Зберегти докази — у першу годину.** В issue дрілу: посилання на червоний прогін, id чи адреса деплою staging,
    відповідь `<staging>/api/health`, рядки журналу з помилкою (без даних користувачів і секретів), знімок алерту.
-7. **Розбір агентом** — нова сесія в корені репо:
+7. **Розбір агентом** — нова сесія в корені репо. Якщо в репо є `.claude/settings.incident.json` (профіль дрілу
+   окремим файлом, як у наборі), запускайте командою з `materials/ops-kit/README.md`, розділ «Профіль «лише
+   пропонує» (C)», крок 3:
 
    ```powershell
-   claude --permission-mode plan
+   claude --settings .claude/settings.incident.json --mcp-config .mcp.incident.json --strict-mcp-config --permission-mode plan
    ```
 
-   Якщо профіль дрілу лежить окремим файлом (`.claude/settings.incident.json`), повна команда з `--settings` і файлом
-   MCP — у `materials/ops-kit/README.md`, розділ «Профіль «лише пропонує» (C)».
+   Сервери MCP у `.mcp.json`, а не в `.mcp.incident.json`, — приберіть `--mcp-config` і `--strict-mcp-config`. Лише
+   якщо всі правила дрілу вже в `.claude/settings.json`, досить `claude --permission-mode plan`.
 
    Далі — промпт [R09 «Розбір інциденту агентом (лише пропонує; докази; «що НЕ є причиною»)»](prompts.md#r09). Агент читає
    деплої, журнали й прогін і **пропонує** причину й виправлення; спроба запису закінчується відмовою — так і має
