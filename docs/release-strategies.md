@@ -56,10 +56,13 @@ Vercel Hobby, Supabase Free, GitHub Actions) і що на безкоштовни
 вимикач світла: проводку (код) проклали заздалегідь, а світло вмикаєте, коли треба.
 
 > «We deployed the new checkout flow behind a feature flag — it's dark by default until QA signs off.»
+>
+> Українською: «Нове оформлення замовлення задеплоїли за прапорцем — за замовчуванням воно вимкнене, доки QA
+> (тестування) не підтвердить.»
 
 Піт Ходжсон у статті на сайті Мартіна Фаулера ділить прапорці на чотири види
 ([Feature Toggles](https://martinfowler.com/articles/feature-toggles.html)):
-**Release** — сховати незавершене й розділити деплой і реліз; **Experiment** — A/B-тест; **Ops** — керування ризиком,
+**Release** — сховати незавершене й розділити деплой і реліз; **Experiment** — A/B-тест (дві версії функції різним користувачам, щоб порівняти, яка краща); **Ops** — керування ризиком,
 сюди належать довгоживучі аварійні вимикачі; **Permissioning** — функція лише для певних користувачів.
 
 ### Темний запуск (dark launch)
@@ -75,6 +78,8 @@ Vercel Hobby, Supabase Free, GitHub Actions) і що на безкоштовни
 сигнал про газ.
 
 > «Release it to 5% of users first.»
+>
+> Українською: «Спершу викотіть на 5 % користувачів.»
 
 ### Blue-green
 
@@ -83,6 +88,8 @@ Vercel Hobby, Supabase Free, GitHub Actions) і що на безкоштовни
 — подвійна інфраструктура.
 
 > «We can revert traffic to the previous environment in under a minute.»
+>
+> Українською: «Ми можемо повернути трафік на попереднє середовище менш ніж за хвилину.»
 
 ### Аварійний вимикач (kill switch)
 
@@ -91,6 +98,8 @@ Vercel Hobby, Supabase Free, GitHub Actions) і що на безкоштовни
 лишається.
 
 > «Kill switch activated for Feature X due to severe performance issues.»
+>
+> Українською: «Аварійний вимикач функції X спрацював: серйозні проблеми з продуктивністю.»
 
 ## Прапорець (feature flag): три способи в нашому стеку
 
@@ -102,7 +111,7 @@ Vercel Hobby, Supabase Free, GitHub Actions) і що на безкоштовни
 |---|---|---|---|---|
 | **1. Змінна середовища** (`FEATURE_X=on`) | код читає `process.env.FEATURE_X` | **ні**: на Vercel зміна змінної діє лише на нові деплої ([джерело](https://vercel.com/docs/environment-variables)); змінні з `NEXT_PUBLIC_` ще й вбудовуються в код браузера під час збірки | безкоштовно | «увімкнено на staging, вимкнено на проді»; **не** для аварійного вимкнення |
 | **2. Таблиця в Supabase** (`public.feature_flags`) | серверний хелпер читає рядок за ключем | так, з наступного запиту (очікувано, не запис) | Supabase Free; проєкт ставиться на паузу після тижня неактивності ([джерело](https://supabase.com/pricing)) — тоді не працює нічого, і прапорець теж. У нашому стеку staging, preview і прод ділять одну базу, отже й один рядок прапорця | повний контроль, RLS (правила доступу до рядків у самій базі), нуль нових сервісів |
-| **3. Vercel Flags + Flags SDK** | прапорець у дашборді Vercel, у коді — npm-пакет `flags` | так; зміни поширюються «in milliseconds» (за Vercel) | доступні на всіх планах; Hobby — до 10 000 flag requests за розрахунковий цикл, 100 прапорців (архівні теж рахуються), 100 сегментів; що буде понад 10 000 на Hobby, документація не каже ([джерело](https://vercel.com/docs/flags/vercel-flags)) | дашборд, сегменти, відсотки, окремі значення для Production і Preview |
+| **3. Vercel Flags + Flags SDK** | прапорець у дашборді Vercel, у коді — npm-пакет `flags` | так; зміни поширюються «in milliseconds» (за Vercel) | доступні на всіх планах; Hobby — максимум 10 000 flag requests за розрахунковий цикл, докупити понад нього не можна (у таблиці цін для Hobby — «-»), 100 прапорців (архівні теж рахуються), 100 сегментів; як поводяться прапорці понад ліміт, документація не описує ([ліміти й ціни](https://vercel.com/docs/flags/vercel-flags/limits-and-pricing)) | дашборд, сегменти, відсотки, окремі значення для Production і Preview |
 
 Пояснення до третього рядка:
 
@@ -122,13 +131,22 @@ Vercel Hobby, Supabase Free, GitHub Actions) і що на безкоштовни
 [PostHog](https://posthog.com/pricing) — 1 млн flag requests на місяць, понад квоту прапорці повертають значення за
 замовчуванням; [GrowthBook](https://growthbook.io/pricing) Cloud Starter — безкоштовно до трьох користувачів.
 Щоб не прив'язуватися до одного постачальника, є відкритий стандарт [OpenFeature](https://openfeature.dev) (проєкт
-CNCF): код викликає один API, а постачальника можна змінити без переписування викликів.
+CNCF — фонду, що опікується відкритими хмарними проєктами): код викликає один API, а постачальника можна змінити без переписування викликів.
 
 **Кеш читання.** Для аварійного вимикача кеш не потрібен: один запит до таблиці за ключем поруч із викликом моделі
 нічого помітного не коштує, а вимкнення діє з наступного запиту (очікувано, не запис). Якщо кеш таки потрібен — у
-Next.js 16 працює `unstable_cache` з `revalidate` у секундах; усередині кешованої функції не можна читати `cookies()`
-і `headers()` ([джерело](https://nextjs.org/docs/app/api-reference/functions/unstable_cache)). Тоді вимкнення діє із
-затримкою до `revalidate` секунд — запишіть це в runbook.
+Next.js 16 працює `unstable_cache` з `revalidate` у секундах, але з пастками
+([джерело](https://nextjs.org/docs/app/api-reference/functions/unstable_cache), станом на 17.11.2026):
+
+- усередині кешованої функції не можна читати `cookies()` і `headers()`, а звичайний серверний клієнт Supabase бере
+  сесію саме з cookies. Клієнт без cookies читає як роль `anon` (без входу): за політикою «читати — користувачам після
+  входу» він отримає порожньо, і fail-closed вимкне функцію. Отже, або окрема політика читання прапорців для `anon`
+  (компроміс: значення прапорців бачить будь-хто), або без кешу;
+- кеш `unstable_cache` переживає деплої;
+- з кешем вимкнення діє із затримкою до `revalidate` секунд — запишіть це в runbook.
+
+Для більшості випадків документація Next.js 16 радить замість `unstable_cache` директиву `use cache` разом з Cache
+Components; у демо курсу Cache Components не ввімкнено, тому цей шлях тут не пропонуємо.
 
 ## Аварійний вимикач для AI-функції
 
@@ -189,7 +207,7 @@ Next.js 16 працює `unstable_cache` з `revalidate` у секундах; у
 ## Канарка: чесно про Hobby
 
 **Канарка деплою на Vercel — це Rolling Releases.** Трафік переходить на нову збірку етапами (наприклад, 5 % → 100 %),
-розподіл — за cookie, метрики «канарка проти поточної» — в Observability, скасування — через Instant Rollback.
+розподіл — за cookie (мітка, яку браузер надсилає з кожним запитом), метрики «канарка проти поточної» — в Observability, скасування — через Instant Rollback.
 Vercel наполегливо радить вмикати разом із **Skew Protection** — захистом від розсинхрону версій: відкрита сторінка
 й далі звертається до тієї збірки, з якої її завантажили, а не до нової. Доступно **лише на Pro (для одного проєкту) і
 Enterprise** ([Rolling Releases](https://vercel.com/docs/rolling-releases), станом на 17.11.2026).
@@ -207,14 +225,15 @@ Enterprise** ([Rolling Releases](https://vercel.com/docs/rolling-releases), ст
 
 Ручні рецепти з бази знань Vercel («Implementing Canary Deployments on Vercel», «Implementing Blue-Green Deployments
 on Vercel»: middleware — код, що виконується перед кожним запитом і вирішує, куди його спрямувати, — плюс Global
-Config, cookie й GitHub Actions) спираються на **Skew Protection**, а вона теж лише на
-Pro і Enterprise ([Skew Protection](https://vercel.com/docs/skew-protection)). На Hobby вони в такому вигляді не
-працюють.
+Config, cookie й GitHub Actions) просять увімкнути **Skew Protection**, а вона лише на
+Pro і Enterprise ([Skew Protection](https://vercel.com/docs/skew-protection)). Тож на Hobby ці рецепти, найімовірніше,
+не працюють у такому вигляді. Це висновок, а не перевірка: обмеження за планом самі гайди не називають, і ми їх не
+запускали.
 
 **Що реально на Hobby — канарка релізу через прапорець з відсотком** (очікувано, не запис):
 
 - у прапорця є відсоток 0–100;
-- на сервері кожен користувач потрапляє в стабільний «кошик» 0–99: хеш від ключа прапорця й id користувача, напр.
+- на сервері кожен користувач потрапляє в стабільний «кошик» 0–99: хеш (число-відбиток рядка: той самий вхід завжди дає те саме число) від ключа прапорця й id користувача, напр.
   `parseInt(sha256(key + ":" + userId).slice(0, 8), 16) % 100`; функція ввімкнена, якщо кошик менший за відсоток. Той
   самий користувач завжди в тому самому кошику, тож функція в нього не «блимає»;
 - кроки 5 → 25 → 100 % з паузою, щоб подивитися `llm.call` і помилки; у журнал — ключ прапорця і чи був він увімкнений;
@@ -284,10 +303,10 @@ Instant Rollback переводять домен на іншу збірку бе
 |---|---|---|
 | Rolling Releases (канарка деплою) | ні — Pro (1 проєкт) і Enterprise; демо-проєкт отримав `plan_not_supported` 17.11.2026 | канарка релізу через прапорець з відсотком |
 | Skew Protection | ні — Pro і Enterprise | після перемикання — повідомити, що сторінку варто перезавантажити; зміни API — сумісні назад |
-| Ручні canary і blue-green з бази знань Vercel | ні в такому вигляді: потребують Skew Protection | Promote і Instant Rollback |
+| Ручні canary і blue-green з бази знань Vercel | найімовірніше, ні в такому вигляді: просять увімкнути Skew Protection (висновок, не перевіряли) | Promote і Instant Rollback |
 | Відкат далі, ніж на попередній прод-деплой | ні — Pro | виправлення вперед: revert і новий деплой |
 | Окреме іменоване середовище staging (Custom Environments) | ні — Pro і Enterprise (станом на 09.11.2026, [release-guide](release-guide.md#staging-на-vercel-hobby)) | гілка `staging` зі змінною лише для неї |
-| Vercel Flags | так: 10 000 flag requests за цикл, 100 прапорців, 100 сегментів | — |
+| Vercel Flags | так: максимум 10 000 flag requests за цикл (без докупівлі), 100 прапорців, 100 сегментів | — |
 | Global Config | так: 1 сховище, 1 MB, перші 100 000 читань і 100 записів | — |
 | Promote і staged-збірка | документація обмежень за планом не називає; не перевіряли | — |
 
@@ -315,7 +334,8 @@ Instant Rollback переводять домен на іншу збірку бе
   [Rolling Releases](https://vercel.com/docs/rolling-releases) (15.09.2026) ·
   [Skew Protection](https://vercel.com/docs/skew-protection) (16.09.2026) ·
   [Environment Variables](https://vercel.com/docs/environment-variables) (17.09.2026) ·
-  [Vercel Flags](https://vercel.com/docs/flags/vercel-flags) (ліміти й ціни — 26.08.2026) ·
+  [Vercel Flags](https://vercel.com/docs/flags/vercel-flags) ·
+  [Vercel Flags: ліміти й ціни](https://vercel.com/docs/flags/vercel-flags/limits-and-pricing) (26.08.2026) ·
   [Edge Config → Global Config](https://vercel.com/changelog/edge-config-is-now-global-config) ·
   [Global Config limits](https://vercel.com/docs/global-config/global-config-limits) (29.07.2026).
 - [Flags SDK](https://flags-sdk.dev) · [Next.js: unstable_cache](https://nextjs.org/docs/app/api-reference/functions/unstable_cache)

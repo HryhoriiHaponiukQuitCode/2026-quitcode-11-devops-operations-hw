@@ -2,8 +2,8 @@
 
 **Необов'язковий матеріал**, без балів. **Skill** (навичка агента) — тека з інструкцією `SKILL.md` і часто зі
 скриптами, яку агент (наприклад, Claude Code) підвантажує, коли задача їй відповідає: «зроби чекліст перед релізом»,
-«розбери інцидент». **Плагін** (plugin) — пакет з кількох skills, команд і hooks, який ставлять однією командою з
-**маркетплейсу** (каталогу плагінів у репо GitHub).
+«розбери інцидент». **Плагін** (plugin) — пакет з кількох skills, команд і hooks (команд, які Claude Code запускає
+сам на подію), який ставлять однією командою з **маркетплейсу** (каталогу плагінів у репо GitHub).
 
 Перевірено через GitHub (репо, наявність `SKILL.md`, команда встановлення з README) **станом на 17.11.2026**. Самі
 skills на продукті учасника не проганяли — це перелік того, що існує, а не рекомендація встановити все.
@@ -24,7 +24,8 @@ skills на продукті учасника не проганяли — це �
 
 ## Перелік
 
-«Офіційний» — skill публікує сама компанія, чий сервіс він обслуговує, або Anthropic.
+«Офіційний» — skill публікує під власним акаунтом на GitHub сама компанія, чий сервіс він обслуговує, Anthropic або
+відома компанія розробки чи безпеки (Sentry, Trail of Bits), навіть коли skill не про її сервіс.
 
 ### Експлуатація: реліз, інцидент, runbook
 
@@ -34,8 +35,8 @@ skills на продукті учасника не проганяли — це �
 | `incident-response` | веде інцидент від оцінки серйозності й статус-повідомлень до postmortem без пошуку винних | інцидент, postmortem | Anthropic | так | [`engineering`](#anthropic-knowledge-work-plugins) |
 | `debug` | дебаг у чотири кроки: відтворити, ізолювати, діагностувати, виправити — наприклад, коли щось зламалося після деплою | дебаг | Anthropic | так | [`engineering`](#anthropic-knowledge-work-plugins) |
 | `runbook` | пише runbook для чергового: точні команди, діагностика, кроки відкату, ескалація | runbook | Anthropic | так | [`operations`](#anthropic-knowledge-work-plugins) |
-| `change-request` | готує запит на зміну: аналіз впливу, план відкату, план повідомлень про поступове викочування | реліз, керування змінами | Anthropic | так | [`operations`](#anthropic-knowledge-work-plugins) |
-| `vercel-flags` | планує й налаштовує прапорці на Vercel: аварійний вимикач, відсоткове викочування, правила таргетингу, прибирання прапорця. Канарку деплою й blue-green **не описує** | прапорці, аварійний вимикач (Vercel) | Vercel | так | [`vercel/flags`](#vercel) |
+| `change-request` | готує запит на зміну: аналіз впливу, план відкату, план повідомлень зацікавленим сторонам про викочування зміни | реліз, керування змінами | Anthropic | так | [`operations`](#anthropic-knowledge-work-plugins) |
+| `vercel-flags` | планує й налаштовує прапорці на Vercel: аварійний вимикач, відсоткове викочування, правила таргетингу, прибирання прапорця. Канарку деплою й blue-green **не описує**. Команди `vercel flags` виконує сам — див. [«Безпека»](#безпека-skill--це-ланцюг-постачання) | прапорці, аварійний вимикач (Vercel) | Vercel | так | [`vercel/flags`](#vercel) |
 | `deployments-cicd` | деплой, Promote, відкат на Vercel і CI-workflow для Vercel | деплой і відкат (Vercel) | Vercel | так | [`vercel@claude-plugins-official`](#vercel) |
 | `supabase-postgres-best-practices` | правила для змін у Postgres: схеми, міграції, політики RLS і їх тести, індекси | Supabase, міграції | Supabase | так | [`supabase/agent-skills`](#supabase) |
 | `sentry-debug-issue`, `sentry-setup-releases` | знаходить помилку в Sentry, підтягує стек і контекст, допомагає виправити; налаштовує releases, щоб бачити, яка версія принесла помилку | Sentry | Sentry | так | [`sentry@claude-plugins-official`](#sentry) |
@@ -65,7 +66,7 @@ skills на продукті учасника не проганяли — це �
 
 Репо [anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins): плагін `engineering`
 (`deploy-checklist`, `incident-response`, `debug`, `documentation`) і плагін `operations` (`runbook`,
-`change-request`). README плагіна каже, що його зроблено насамперед для Cowork, але працює він і в Claude Code.
+`change-request`). За README плагіна, він працює й у Claude Code.
 
 ```bash
 claude plugin marketplace add anthropics/knowledge-work-plugins
@@ -100,7 +101,12 @@ claude plugin marketplace add supabase/agent-skills
 claude plugin install postgres-best-practices@supabase-agent-skills
 ```
 
-Або лише один skill: `npx skills add supabase/agent-skills --skill supabase-postgres-best-practices`.
+Або лише один skill; друга команда закріплює переглянутий коміт (див. [«Безпека»](#безпека-skill--це-ланцюг-постачання)):
+
+```bash
+npx skills add supabase/agent-skills --skill supabase-postgres-best-practices
+npx skills add supabase/agent-skills@c9be0e931b7930f7d02126d04774d904c381e7d7 --skill supabase-postgres-best-practices
+```
 
 ### Sentry
 
@@ -118,8 +124,12 @@ claude plugin marketplace add getsentry/skills
 claude plugin install sentry-skills@sentry-skills
 ```
 
-Або по одному: `npx skills add getsentry/skills --skill skill-scanner -a claude-code` (так само для
-`gha-security-review`).
+Або по одному; друга команда закріплює переглянутий коміт (так само для `gha-security-review`):
+
+```bash
+npx skills add getsentry/skills --skill skill-scanner -a claude-code
+npx skills add getsentry/skills@a582c51ee29d0f35e6ac321340796f77d43da733 --skill skill-scanner -a claude-code
+```
 
 ### Trail of Bits
 
@@ -163,6 +173,12 @@ claude plugin install sentry-skills@sentry-skills
 - **Skills, що торкаються продакшену** (деплой, відкат, прапорці), спершу пробуйте на preview чи staging. Дії, що
   змінюють прод, підтверджує людина. Після встановлення перевірте профіль «лише пропонує» так само, як у
   [R08](prompts.md#r08): прохання про заборонену дію має закінчитися відмовою.
+- **`vercel-flags` виконує команди сам.** Його `SKILL.md` (коміт `75fa303`, станом на 17.11.2026) велить агенту не
+  лишати кроки CLI вам, а виконувати `vercel flags …` самому: створення, зміну, відсоток, архівування, зокрема на
+  Production. Це суперечить правилу «вимикає людина, агент лише пропонує». У сесіях, де skill встановлено, додайте в
+  `deny` `Bash(*vercel flags*)` (у Windows ще й `PowerShell(*vercel flags*)`) або просіть лише план. Профіль
+  «лише пропонує» з набору (`materials/ops-kit/.claude/settings.incident.json`) ці рядки вже має; вони блокують і
+  команди читання `vercel flags`.
 - **Секрети** — як завжди: ні в `SKILL.md`, ні в чаті з агентом. Skill, який просить вставити токен у файл чи в
   розмову, — сигнал зупинитися.
 
