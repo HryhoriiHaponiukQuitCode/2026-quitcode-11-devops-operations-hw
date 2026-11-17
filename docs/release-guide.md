@@ -346,8 +346,9 @@ PM.
   **peer-залежність** (пакет, який він очікує поруч у проєкті) з `typescript >=5.0.0` до `>=6.0.0`. У демо TypeScript
   5.9.3, а `typescript-eslint` 8 допускає лише `<6.1.0`.
 - **Чому CI зелений.** CI ставить залежності командою `npm ci` — строго за `package-lock.json`, нічого не перераховуючи.
-  Vercel сам визначає команду встановлення ([документація](https://vercel.com/docs/builds/configure-a-build)), і в цьому
-  випадку вона заново перевірила peer-залежності. Відтворено локально на npm 11.16.0: `npm ci` → успіх, `npm install` →
+  Vercel сам визначає команду встановлення за lock-файлом: для npm з `package-lock.json` це `npm install`
+  ([документація Vercel «Package Managers»](https://vercel.com/docs/package-managers), станом на 17.11.2026), а вона
+  заново перевіряє peer-залежності. Відтворено локально на npm 11.16.0: `npm ci` → успіх, `npm install` →
   `ERESOLVE` (опис [#46](https://github.com/koldovsky/2026-quitcode-06-leave-portal-demo/pull/46)).
 
 **Як виправили** — [#46](https://github.com/koldovsky/2026-quitcode-06-leave-portal-demo/pull/46), злито 17.11.2026
