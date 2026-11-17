@@ -1,0 +1,94 @@
+# ПРИКЛАД, НЕ ЗАПУСКАЛИ (станом на 17.11.2026). Це не окремий workflow: це фрагменти для вашого
+# .github/workflows/ci.yml з шаблону курсу. Не кладіть цей файл у .github/workflows/ — там він стане зламаним workflow.
+# Як застосувати й навіщо: docs/release-guide.md, розділ «Staging з окремою базою»; промпт R03 (docs/prompts.md#r03).
+#
+# Що робить: після злиття в main CI спершу застосовує міграції в базу STAGING (job db-deploy-staging), і лише якщо
+# там зелено — у базу проду (наявний job db-deploy). Обидва jobs перед міграцією звіряють, у ЯКИЙ проєкт веде
+# рядок підключення: ref проєкту з імені користувача Session pooler `postgres.<ref>` має збігатися зі змінною репо.
+# Ref не секрет (він і так є в NEXT_PUBLIC_SUPABASE_URL у браузері), тож журнал друкує лише його.
+#
+# Перед злиттям PR з цими змінами (робить людина в інтерфейсі GitHub, інакше CI на main почервоніє):
+#   - Settings → Environments → New environment `staging` → Deployment branches: Selected branches → `main`;
+#     секрет environment `SUPABASE_DB_URL` = рядок Session pooler (порт 5432) з Connect у проєкті STAGING;
+#   - Settings → Secrets and variables → Actions → Variables → Repository variables:
+#     `SUPABASE_STAGING_REF` = ref проєкту staging, `SUPABASE_PROD_REF` = ref прод-проєкту (не секрети);
+#   - `SUPABASE_DB_URL` не має бути серед Repository secrets (лише секрети середовищ `staging` і `production`).
+# Рядки `uses:` нижче — для читання: скопіюйте їх з вашого наявного job db-deploy (після треку D вони за SHA).
+
+# 1) Додати в наявний on.workflow_dispatch.inputs (поруч з include_seed):
+on:
+  workflow_dispatch:
+    inputs:
+      include_seed_staging:
+        description: "db-deploy-staging: застосувати й supabase/seed.sql у базу staging (--include-seed)"
+        type: boolean
+        default: false
+
+jobs:
+  # 2) Новий job — поставити перед db-deploy.
+  db-deploy-staging:
+    # Лише main: спершу база staging, потім прод (db-deploy чекає на цей job).
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    needs: [spec, app, conformance, db-check]
+    runs-on: ubuntu-latest
+    # Секрет environment staging (Deployment branches = main) бачить лише job, що посилається на це середовище.
+    environment: staging
+    concurrency:
+      group: supabase-staging
+      cancel-in-progress: false
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }} # рядок Session pooler проєкту staging
+      STAGING_REF: ${{ vars.SUPABASE_STAGING_REF }}
+      PROD_REF: ${{ vars.SUPABASE_PROD_REF }}
+      SEED_FLAG: ${{ github.event_name == 'workflow_dispatch' && inputs.include_seed_staging && '--include-seed' || '' }}
+    steps:
+      # Без запасного шляху через link і без пропуску: немає секрету чи він веде не туди — job червоний,
+      # і прод (db-deploy) не мігрує.
+      - name: Guard - staging database ref
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error title=db-deploy-staging::Секрет SUPABASE_DB_URL в environment staging не задано."
+            exit 1
+          fi
+          ref=$(printf '%s' "$SUPABASE_DB_URL" | sed -n -E 's#^postgres(ql)?://postgres\.([a-z0-9]+):.*$#\2#p')
+          if [ -z "$ref" ]; then
+            echo "::error title=db-deploy-staging::SUPABASE_DB_URL не схожий на рядок Session pooler (postgres.<ref>:…@…:5432). Скопіюйте його з Connect у проєкті staging."
+            exit 1
+          fi
+          if [ -z "$STAGING_REF" ] || [ -z "$PROD_REF" ] || [ "$STAGING_REF" = "$PROD_REF" ]; then
+            echo "::error title=db-deploy-staging::Задайте змінні репо SUPABASE_STAGING_REF і SUPABASE_PROD_REF (різні)."
+            exit 1
+          fi
+          if [ "$ref" != "$STAGING_REF" ]; then
+            echo "::error title=db-deploy-staging::Рядок підключення веде не в проєкт staging. Міграцію зупинено."
+            exit 1
+          fi
+          echo "Ціль міграцій: проєкт $ref (staging)"
+      - uses: actions/checkout@v7
+      - uses: supabase/setup-cli@v3 # та сама закріплена версія, що в db-deploy
+      - name: Dry run (list of migrations to apply)
+        run: supabase db push --yes --dry-run --db-url "$SUPABASE_DB_URL" $SEED_FLAG
+      - name: Apply migrations
+        run: supabase db push --yes --db-url "$SUPABASE_DB_URL" $SEED_FLAG
+
+  # 3) Наявний db-deploy (прод): дописати db-deploy-staging у needs, у env — дві змінні з ref, і одразу після
+  #    кроку «Check Supabase secrets» — крок-запобіжник. Решта кроків db-deploy — без змін.
+  db-deploy:
+    needs: [spec, app, conformance, db-check, db-deploy-staging]
+    env:
+      STAGING_REF: ${{ vars.SUPABASE_STAGING_REF }}
+      PROD_REF: ${{ vars.SUPABASE_PROD_REF }}
+    steps:
+      - name: Guard - production database ref
+        if: steps.mode.outputs.mode != 'skip'
+        run: |
+          if [ "${{ steps.mode.outputs.mode }}" = "link" ]; then
+            ref="$SUPABASE_PROJECT_ID"
+          else
+            ref=$(printf '%s' "$SUPABASE_DB_URL" | sed -n -E 's#^postgres(ql)?://postgres\.([a-z0-9]+):.*$#\2#p')
+          fi
+          if [ -z "$ref" ] || [ -z "$PROD_REF" ] || [ "$ref" != "$PROD_REF" ] || [ "$ref" = "$STAGING_REF" ]; then
+            echo "::error title=db-deploy::Рядок підключення production не веде в прод-проєкт (чи не задано SUPABASE_PROD_REF). Міграцію зупинено."
+            exit 1
+          fi
+          echo "Ціль міграцій: проєкт $ref (production)"

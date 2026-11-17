@@ -1,11 +1,12 @@
 # Трек розробника WS11: покроково
 
-Ви продовжуєте **своє репо** `<я>/<team-slug>` з WS6–WS10: той самий Supabase, той самий Vercel, ruleset `solo-main`,
-ворота, smoke і `/api/health` з WS8. Нового репо немає. Цього тижня продукт стає **експлуатованим**: зміна йде на прод
+Ви продовжуєте **своє репо** `<я>/<team-slug>` з WS6–WS10: той самий прод-проєкт Supabase, той самий Vercel, ruleset
+`solo-main`, ворота, smoke і `/api/health` з WS8. Нового репо немає; новий лише **другий проєкт Supabase — для
+staging**. Цього тижня продукт стає **експлуатованим**: зміна йде на прод
 через перевірене середовище, про збій першою дізнається людина з команди, а інцидент — це процедура, а не паніка:
 
-- **A** — середовища й реліз: гілка `staging` зі змінною лише для неї, smoke кожного деплою з обходом захисту, доступ
-  PM до staging, тег `v1.0.0` після приймання PM;
+- **A** — середовища й реліз: гілка `staging` з власною базою Supabase і змінною лише для неї, міграції спершу в
+  staging через CI, smoke кожного деплою з обходом захисту, доступ PM до staging, тег `v1.0.0` після приймання PM;
 - **B** — сигнали: алерт людині з червоного smoke, трекер помилок сервера, журнал AI-функції `llm.call` без тексту
   користувача;
 - **C** — інцидент-дріл на staging: зламати → помітити сигналом → розбір агентом у профілі «лише пропонує» →
@@ -25,7 +26,8 @@
   покласти, які секрети потрібні й як перевірити. Таблиця «що куди» — у [`materials/README.md`](../materials/README.md).
 - **Гайди:** [середовища, реліз і ланцюг постачання](release-guide.md) · [сигнали](signals-guide.md) ·
   [інцидент](incident-guide.md) · [вартість і ліміти](cost-guide.md). Тут — порядок і що робити тижнем, там — чому і
-  як влаштовано. Факти про тарифи й інтерфейси — станом на 09.11.2026 (джерела — у гайдах).
+  як влаштовано. Факти про тарифи й інтерфейси — станом на 09.11.2026, про окрему базу staging — станом на 17.11.2026
+  (джерела — у гайдах).
 - **Демо як зразок, а не заготовка:** гілка `ws11/operations` у демо-репо курсу ([PR #40](https://github.com/koldovsky/2026-quitcode-06-leave-portal-demo/pull/40)): smoke
   кожного деплою, алерт, `llm.call`, профіль «лише пропонує», runbook; дія з postmortem — [PR #41](https://github.com/koldovsky/2026-quitcode-06-leave-portal-demo/pull/41).
   Шаблони postmortem і runbook — у `materials/`. Runbook демо про ваш продукт нічого не доводить.
@@ -46,14 +48,14 @@ $B = "https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operat
 B=https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operations-hw/main/materials   # Git Bash
 ```
 
-**Бюджет основного треку: 5–7 годин** (кроки 1–6, без бонусу). Бонус — ще ~2–3 год. Дні — як у
+**Бюджет основного треку: 6–8 годин** (кроки 1–6, без бонусу). Бонус — ще ~2–3 год. Дні — як у
 [README, «Тиждень»](../README.md#тиждень): день 0 — заняття (Вт 17.11.2026), день 6 — здача (до кінця
 Пн 23.11.2026).
 
 | Крок | Коли | Бюджет | Трек |
 |---|---|---|---|
 | 1. Підготовка, аудит і ланцюг постачання | дні 1–2 | ~1 год | D0, D |
-| 2. Staging і smoke кожного деплою | дні 1–2 | ~1,5 год | A |
+| 2. Staging з окремою базою і smoke кожного деплою | дні 1–2 | ~2,5 год | A |
 | 3. Сигнали: алерт, трекер помилок, `llm.call` | дні 3–4 | ~1,5–2 год | B |
 | 4. Інцидент-дріл, розбір, postmortem і runbook | дні 3–4 («реліз-кандидат на staging» — до кінця дня 4) | ~1,5–2 год | C |
 | 5. Реліз-кандидат, приймання PM і тег `v1.0.0` | дні 3–4 — release.yml і реліз-кандидат; день 5 — виправлення за PM; тег — день 6, після приймання PM | ~20 хв + виправлення за PM | A |
@@ -65,8 +67,9 @@ B=https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operations
 файл з `materials/` — в описі PR «взято з <посилання на файл>».
 
 **Чого не робимо ніколи:** не відкриваємо `.env*` у чаті з агентом і не вставляємо туди значення секретів; не
-запускаємо `supabase migration down` і `db reset --linked` проти свого проєкту; не беремо `npx supabase@latest` (лише
-закріплена версія з проєкту); не даємо агенту права запису на проді; не ламаємо прод і базу заради дрілу.
+запускаємо `supabase migration down` і `db reset --linked` проти жодного зі своїх проєктів (прод і staging); не беремо
+`npx supabase@latest` (лише закріплена версія з проєкту); не даємо агенту права запису на проді; не копіюємо прод-дані
+в staging; не ламаємо прод і базу заради дрілу.
 
 ## 1. Підготовка, аудит і ланцюг постачання (~1 год) — D0, трек D
 
@@ -82,7 +85,8 @@ B=https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operations
    git status --short     # порожньо
    ```
 
-2. **База не спить:** Supabase Dashboard → проєкт активний (якщо ні — **Resume project**). D0 досі зелений:
+2. **База не спить:** Supabase Dashboard → прод-проєкт активний (якщо ні — **Resume project**; проєкт staging
+   створите на кроці 2). D0 досі зелений:
 
    ```powershell
    git fetch origin
@@ -101,9 +105,9 @@ B=https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operations
    | Область аудиту R01 | Крок цієї домашки | Промпт |
    |---|---|---|
    | 1. CI/CD | 1.4 (дії за SHA, назви jobs без змін); ворота й ruleset `solo-main` — як були | R02 |
-   | 2. Середовища, змінні й секрети | 2.1, 2.5 (staging, `APP_ENV`) | R03 |
+   | 2. Середовища, змінні й секрети | 2.1–2.3, 2.6, 2.7, 2.9 (проєкт і база staging, `APP_ENV`, змінні Vercel) | R03 |
    | 3. Реліз і відкат | 5 (тег `v1.0.0`); відкат і Promote — у runbook, 4.11; прапорці — необов'язково | R13, R11, R19 |
-   | 4. Health і smoke | 2.1, 2.2 (`appEnv`, smoke кожного деплою) | R03, R04 |
+   | 4. Health і smoke | 2.3, 2.4 (`appEnv`, `supabaseRef`, smoke кожного деплою) | R03, R04 |
    | 5. Алерти | 3.3 | R05 |
    | 6. Трекер помилок | 3.5 | R06 |
    | 7. Журнали | 3.6 (`llm.call`) | R07 |
@@ -149,21 +153,46 @@ B=https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operations
 `/api/health` проду з `"db":"ok"` і SHA `main`; зелений прогін smoke на `main`; `accounts.zip` на SHA і ролі тестових
 акаунтів (лише адреси `*@example.test`); версія `next` з `npm ls next`.
 
-## 2. Staging і smoke кожного деплою (~1,5 год) — трек A
+## 2. Staging з окремою базою і smoke кожного деплою (~2,5 год) — трек A
 
 Навіщо: PM приймає реліз не на проді, а на генеральній репетиції — staging. На безкоштовному Vercel це гілка
-`staging` зі своєю адресою і своєю змінною середовища. Smoke тепер перевіряє кожен деплой, зокрема staging, за адресою
-саме цього деплою. Як влаштовано й чого staging **не** дає (окремої бази) — у
+`staging` зі своєю адресою і своєю змінною середовища, а в Supabase — **другий проєкт** зі своєю базою: що б не
+сталося на репетиції (UAT, preview з PR, дріл), прод-дані не змінюються. Smoke тепер перевіряє кожен деплой, зокрема
+staging, за адресою саме цього деплою. Як влаштовано й чому — у
 [release-guide, «Staging на Vercel Hobby»](release-guide.md#staging-на-vercel-hobby) і
-[«Спільна база»](release-guide.md#спільна-база-правила-staging).
+[«Staging з окремою базою»](release-guide.md#staging-з-окремою-базою); тут — порядок дій.
 
-**Порядок важливий:** подія Vercel `repository_dispatch` запускає workflow **лише з файлу на `main`**. Тому спершу
-зливаємо новий smoke і `/api/health` у `main`, а вже потім створюємо `staging`.
+**Порядок важливий**, і він продиктований залежностями:
 
-1. **`/api/health` показує середовище** — промпт [R03 «Staging: гілка, змінна для гілки, доступ PM»](prompts.md#r03).
-   На staging `VERCEL_ENV` теж `preview`, тому відрізнити staging допомагає ваша змінна `APP_ENV`, яку health додає
-   окремим полем. Поля D0 (`ok`, `sha`, `env`, `db`, `reason`) не змінюються. PR → злиття.
-2. **Smoke кожного деплою** — промпт [R04 «Smoke кожного деплою з обходом захисту»](prompts.md#r04). Файли набору можна
+- секрет і змінні в GitHub — **до** злиття job міграцій staging, інакше CI на `main` почервоніє, а прод не мігрує;
+- подія Vercel `repository_dispatch` запускає workflow **лише з файлу на `main`**: smoke і `/api/health` — у `main`
+  до того, як з'явиться `staging`;
+- база staging готова (схема, акаунти, дані для UAT) — **до** того, як на неї перемкнуться Preview;
+- Preview перемикаємо — **до** першого деплою гілки `staging`, щоб цей деплой і його smoke не пішли в прод.
+
+Уже налаштували staging на прод-базі раніше? Пройдіть
+[«Якщо staging уже ходив у прод-базу»](release-guide.md#якщо-staging-уже-ходив-у-прод-базу) — це ті самі кроки нижче.
+
+1. **Звільнити слот і створити проєкт staging** — [release-guide, кроки 1–2](release-guide.md#1-звільнити-слот).
+   Зайвий проєкт (найчастіше двійник WS9) — на **паузу**, не видаляти; прод не чіпати. Новий проєкт
+   `<team-slug>-staging` у тому самому регіоні, налаштування Data API як у проді. Забрати в менеджер паролів: адресу,
+   publishable і secret key, рядок Session pooler (порт 5432) — **цілком з проєкту staging**, не правлячи прод-рядок.
+   Одразу ж **Auth staging, частина 1** ([крок 6](release-guide.md#6-auth-у-проєкті-staging)): налаштування як у проді;
+   Redirect URLs — `https://*-<scope>.vercel.app/**` і `http://localhost:3000/**`.
+2. **GitHub: environment `staging`, секрет і змінні з ref** —
+   [крок 3](release-guide.md#3-github-environment-staging-секрет-і-змінні-з-ref). New environment `staging`, Deployment
+   branches = `main`; секрет `SUPABASE_DB_URL` = рядок staging; Repository variables `SUPABASE_STAGING_REF` і
+   `SUPABASE_PROD_REF`. `SUPABASE_DB_URL` — не серед Repository secrets.
+3. **`/api/health` показує середовище й базу, CI мігрує спершу staging** — промпт
+   [R03 «Staging: гілка, власна база, змінна для гілки, доступ PM»](prompts.md#r03). У health два нові поля: `appEnv`
+   (з вашої змінної `APP_ENV`: на staging `VERCEL_ENV` теж `preview`) і `supabaseRef` (ref проєкту з
+   `NEXT_PUBLIC_SUPABASE_URL`). Поля D0 (`ok`, `sha`, `env`, `db`, `reason`) не змінюються. У `ci.yml` — job
+   `db-deploy-staging` із запобіжником ref, `db-deploy` чекає на нього, вхід `include_seed_staging`
+   (зразок — [`ci-examples/db-deploy-staging.yml`](../materials/ops-kit/ci-examples/db-deploy-staging.yml), приклад, не
+   запускали). PR → злиття → у прогоні CI на `main`: `db-deploy-staging` зелений, у журналі «Ціль міграцій: проєкт
+   <ref staging> (staging)», далі зелений `db-deploy`. Потім Actions → CI → Run workflow (`main`,
+   `include_seed_staging` = true) — seed у staging.
+4. **Smoke кожного деплою** — промпт [R04 «Smoke кожного деплою з обходом захисту»](prompts.md#r04). Файли набору можна
    завантажити самим, тоді агент працює з `git diff`:
 
    ```powershell
@@ -177,8 +206,8 @@ B=https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operations
    ```
 
    Перевірте в diff: прод-job поводиться як раніше (`PROD_URL`, SHA `main`, щоденний розклад — він ще й «будильник» для
-   бази), новий job бере адресу з `client_payload.url`. PR → злиття.
-3. **Обхід захисту для автоматики** (Protection Bypass for Automation — перепустка для робота):
+   **прод-бази**), новий job бере адресу з `client_payload.url`. PR → злиття.
+5. **Обхід захисту для автоматики** (Protection Bypass for Automation — перепустка для робота):
    - Vercel → ваш проєкт → Settings → Deployment Protection → Protection Bypass for Automation → створити секрет (точні
      назви перевірте в інтерфейсі). Там же подивіться, чи ввімкнено Vercel Authentication: у WS6 `bootstrap.md` радив
      її вимкнути. Якщо вмикаєте — режим **Standard Protection** (прод-домени лишаються відкритими: D0 і перевірка курсу
@@ -190,7 +219,19 @@ B=https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operations
      ```
 
      Або Settings → Secrets and variables → Actions → New repository secret. Значення — більше ніде.
-4. **Гілка `staging` від свіжого `main`:**
+6. **Локально — staging, тестові акаунти й дані для UAT** —
+   [крок 5](release-guide.md#5-тестові-акаунти-локальна-розробка-й-дані-для-uat). Поточний `.env.local` за бажання
+   збережіть як `.env.prod.local`; у `.env.local` — ключі **staging** і той самий `DEMO_USER_PASSWORD` →
+   `npm run users:demo` (ті самі акаунти з `accounts.zip`, тепер і в staging). Пройдіть сценарій demo day локально:
+   довідників чи записів бракує — синтетичні у `seed.sql` окремим PR і Run workflow з `include_seed_staging`, або
+   введіть їх на staging через застосунок як тестовий адміністратор. Прод-дані не копіюємо. UAT-скрипти з WS8 (`npm run
+   uat`) тепер запускайте лише з `--url <staging>`.
+7. **Змінні бази у Vercel** — [крок 7](release-guide.md#7-vercel-змінні-бази-для-кожного-середовища). Для кожної змінної
+   Supabase: наявний запис → лише **Production** → Save; **Add new** → та сама назва → **Preview, усі гілки** →
+   значення staging; Development — staging або без галочки. `SUPABASE_SECRET_KEY` (якщо застосунок його читає з WS7) —
+   лише Production = прод-ключ; ключ staging для гілки `staging` додасте на кроці 9, у PR-preview — жодного. Новий
+   push у кожен відкритий PR. Перевірка: жодне значення не-Production не вказує на прод-проєкт.
+8. **Гілка `staging` від свіжого `main`:**
 
    ```powershell
    git switch main
@@ -199,41 +240,49 @@ B=https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operations
    git push -u origin staging
    ```
 
-5. **Змінна лише для гілки** — Vercel → Settings → Environment Variables → нова змінна `APP_ENV` = `staging`,
+9. **Змінні лише для гілки** — Vercel → Settings → Environment Variables → нова змінна `APP_ENV` = `staging`,
    середовище **лише Preview**, гілка **`staging`** (назви полів перевірте в інтерфейсі). Або з Vercel CLI ≥ 64.7.0:
-   `vercel env add APP_ENV --environment preview --git-branch staging` (значення CLI спитає). Змінні діють **лише на
-   нові деплої**: якщо деплой `staging` уже зібрався без неї — Deployments → останній деплой `staging` → Redeploy.
-6. **Адреса staging.** Кожна гілка вже має стабільну адресу виду `<проєкт>-git-staging-<scope>.vercel.app`. Справжню
-   скопіюйте з Vercel → Deployments (фільтр за гілкою `staging`): довгі назви обрізаються, не збирайте її вручну.
-   Власний домен необов'язковий; як його прив'язати до гілки — у [release-guide](release-guide.md#staging-на-vercel-hobby).
-   Відкрийте `<staging>/api/health`: має бути `"env":"preview"`, `"appEnv":"staging"`, `"db":"ok"`. На проді — без
-   `"staging"`.
-7. **Зелений smoke на деплой staging:** Actions → smoke → прогін, запущений подією `repository_dispatch` для деплою
-   `staging`. У журналі видно адресу staging, а значення секрету — ні. Червоний через стіну входу Vercel — секрет не
-   задано чи задано з помилкою в назві.
-8. **Доступ PM до staging.** На Hobby три варіанти: запит доступу (один зовнішній користувач на акаунт Hobby), спільне
-   посилання (одне на акаунт) або вимкнений захист preview. Порівняння — у
-   [release-guide, «Доступ PM до staging»](release-guide.md#доступ-pm-до-staging-на-hobby). Окремого перемикача «захист
-   вимкнено лише для гілки `staging`» серед можливостей Hobby ми не знайшли — якщо побачите його в інтерфейсі, запишіть.
-   Оберіть один варіант, напишіть PM у чат команди адресу staging і що робити, а обраний варіант — у runbook (крок 4).
-   Спільне посилання містить токен доступу: у публічних файлах — лише адреса без параметрів після «?».
-9. **Як staging отримує зміни:** лише з `main`, без окремої розробки — PR `main → staging` або так:
+   `vercel env add APP_ENV --environment preview --git-branch staging` (значення CLI спитає). Якщо застосунок читає
+   `SUPABASE_SECRET_KEY` — так само лише Preview, гілка `staging`, значення — секретний ключ **staging**. Змінні діють **лише на нові деплої**: якщо деплой `staging`
+   уже зібрався без них — Deployments → останній деплой `staging` → Redeploy.
+10. **Адреса staging і Auth staging, частина 2.** Кожна гілка вже має стабільну адресу виду
+    `<проєкт>-git-staging-<scope>.vercel.app`. Справжню скопіюйте з Vercel → Deployments (фільтр за гілкою `staging`):
+    довгі назви обрізаються, не збирайте її вручну. Власний домен необов'язковий; як його прив'язати до гілки — у
+    [release-guide](release-guide.md#staging-на-vercel-hobby). У проєкті **staging**: Site URL = адреса staging,
+    Redirect URLs + `https://<адреса-staging>/**`. Відкрийте `<staging>/api/health`: має бути `"env":"preview"`,
+    `"appEnv":"staging"`, `"db":"ok"` і `supabaseRef` — ref **staging**. На проді — без `"staging"` і з ref проду.
+    Увійдіть на staging акаунтом з `accounts.zip`.
+11. **Зелений smoke на деплой staging і на PR-preview:** Actions → smoke → прогін, запущений подією
+    `repository_dispatch` для деплою `staging`. У журналі видно адресу staging і JSON health з `supabaseRef` staging, а
+    значення секрету — ні. Червоний через стіну входу Vercel — секрет не задано чи задано з помилкою в назві. Те саме
+    знайдіть для деплою будь-якого PR після кроку 7: `supabaseRef` теж staging.
+12. **Доступ PM до staging.** На Hobby три варіанти: запит доступу (один зовнішній користувач на акаунт Hobby), спільне
+    посилання (одне на акаунт) або вимкнений захист preview. Порівняння — у
+    [release-guide, «Доступ PM до staging»](release-guide.md#доступ-pm-до-staging-на-hobby). Окремого перемикача
+    «захист вимкнено лише для гілки `staging`» серед можливостей Hobby ми не знайшли — якщо побачите його в інтерфейсі,
+    запишіть. Оберіть один варіант, напишіть PM у чат команди адресу staging і що робити, а обраний варіант — у runbook
+    (крок 4). Спільне посилання містить токен доступу: у публічних файлах — лише адреса без параметрів після «?».
+13. **Як staging отримує зміни:** лише з `main`, без окремої розробки — PR `main → staging` або так:
 
-   ```powershell
-   git fetch origin
-   git switch staging
-   git merge --ff-only origin/main
-   git push
-   ```
+    ```powershell
+    git fetch origin
+    git switch staging
+    git merge --ff-only origin/main
+    git push
+    ```
 
-   `--ff-only` відмовить, якщо в `staging` є коміти, яких немає в `main`, — так і має бути.
-10. **Вхід на staging.** Staging ходить у ту саму базу Supabase, що й прод: лише тестові акаунти з `accounts.zip`,
-    жодних руйнівних дій. Якщо після входу чи запрошення вас перекидає на адресу проду — у Supabase → Authentication →
-    URL Configuration додайте адресу staging до Redirect URLs (точні назви перевірте в інтерфейсі).
+    `--ff-only` відмовить, якщо в `staging` є коміти, яких немає в `main`, — так і має бути. Схему бази staging
+    оновлює CI ще на злитті в `main` (крок 3), тож після ff код і схема staging збігаються.
+14. **Прод-Auth — лише прод-адреси.** У прод-проєкті Supabase → Authentication → URL Configuration приберіть
+    `localhost`, preview-wildcard і адресу staging, якщо вони там є: preview і локальна розробка тепер ходять у
+    staging (точні назви перевірте в інтерфейсі).
 
-**Доказ (у файл здачі):** адреса staging і гілка `staging`; `<staging>/api/health` з `"appEnv":"staging"`; PR з
-`appEnv` і PR зі smoke кожного деплою; як зміни з `main` потрапили в `staging` (PR чи коміт злиття); зелений прогін smoke на деплой `staging` (посилання на прогін); обраний спосіб доступу PM (запишете в
-runbook на кроці 4).
+**Доказ (у файл здачі):** адреса staging і гілка `staging`; назва проєкту Supabase staging, `supabaseRef` staging і
+проду (ref не секрет; ключів не пишемо); `<staging>/api/health` з `"appEnv":"staging"`; PR з `appEnv`, `supabaseRef`
+і `db-deploy-staging` і PR зі smoke кожного деплою; прогін CI на `main`, де `db-deploy-staging` друкує ref staging і
+«Apply migrations» — `success`; як зміни з `main` потрапили в `staging` (PR чи коміт злиття); зелений прогін smoke на
+деплой `staging` і прогін smoke на один PR-preview — обидва з `supabaseRef` staging (посилання на прогони); обраний
+спосіб доступу PM (запишете в runbook на кроці 4).
 
 ## 3. Сигнали: алерт, трекер помилок, `llm.call` (~1,5–2 год) — трек B
 
@@ -303,7 +352,10 @@ runbook на кроці 4).
 
 Навіщо: інцидент — це процедура, а не паніка. Ви один раз проходите її на staging, коли нічого не горить, і
 лишаєте в репо все, щоб її повторив будь-хто: runbook, postmortem, нову перевірку. Цикл, варіанти поломки, ролі й
-серйозність — у [гайді інциденту](incident-guide.md). Правило дрілу: **лише staging, без міграцій і без бази**.
+серйозність — у [гайді інциденту](incident-guide.md). Правило дрілу: **лише staging, без міграцій і без видалення
+даних.** У staging власна база, але схему не відкотити (лише нова міграція вперед), резервних копій на Free немає, а
+базою staging користуються PM на UAT і всі preview. Дріл тренує ланцюг «сигнал → розбір → виправлення», а не роботу з
+базою.
 
 **До поломки** (журнали Vercel на Hobby живуть годину — налаштовувати посеред дрілу пізно):
 
@@ -321,7 +373,8 @@ runbook на кроці 4).
    Далі в Claude Code — `/mcp` → вхід. Звірте назви інструментів у `/mcp` з `deny` у `.claude/settings.json` (набір
    інструментів сервера змінюється, а префікс `mcp__vercel__` — це ім'я, яке ви дали серверу). Перевірка профілю:
    попросіть агента показати значення будь-якої змінної середовища — має бути відмова. Supabase MCP (`read_only=true`,
-   `project_ref`) у шаблоні вже є; для дрілу зі змінною середовища він зазвичай не потрібен.
+   `project_ref`) у шаблоні вже є; для дрілу зі змінною середовища він зазвичай не потрібен. Якщо підключаєте — лише
+   з `project_ref` **проєкту staging**.
 3. **Норма:** останній прогін smoke на `staging` — зелений. Відкрийте issue «Інцидент-дріл: <коротко>» і запишіть
    **до поломки**: що зламаєте, який сигнал має спрацювати і через скільки. Інцидент, знайдений очима, рубрика не
    зараховує.
@@ -330,9 +383,11 @@ runbook на кроці 4).
 лише для гілки `staging`. Час записуйте в одному поясі (журнали Vercel — в UTC) і вкажіть, у якому.
 
 4. **Зламати (T0).** Vercel → Settings → Environment Variables → змінна Supabase з префіксом `NEXT_PUBLIC_` для
-   **Preview, гілка `staging`** з хибним значенням (не інший справжній ключ — наприклад, змініть один символ). Ключі в
-   Supabase **не чіпайте**: це зламало б прод. → Deployments → останній деплой `staging` → Redeploy (змінні
-   `NEXT_PUBLIC_` вбудовуються під час збірки). T0 — коли деплой став Ready.
+   **Preview, гілка `staging`** з хибним значенням (не інший справжній ключ — наприклад, змініть один символ): нове
+   перевизначення лише для цієї гілки поверх загального Preview. Запишіть назву змінної — на кроці 9 видалите саме її.
+   Ключі в Supabase **не чіпайте**: ротація ключа staging зупинила б UAT і всі preview, а дріл тренує сигнал. →
+   Deployments → останній деплой `staging` → Redeploy (змінні `NEXT_PUBLIC_` вбудовуються під час збірки). T0 — коли
+   деплой став Ready.
 5. **Сигнал (T1).** Smoke деплою staging червоний (`/api/health` → 503) → повідомлення в Telegram. Запишіть час
    повідомлення. Чекали довше 10 хвилин, а сигналу немає — це вже знахідка для postmortem.
 6. **Зберегти докази — у першу годину.** В issue дрілу: посилання на червоний прогін, id чи адреса деплою staging,
@@ -363,8 +418,9 @@ runbook на кроці 4).
    перегляньте файл: значень секретів, chat id і e-mail (крім `*@example.test`) немає. Потрапило значення — спершу
    ротація секрету, потім заміна лише значення на `[ВИДАЛЕНО]`, як описано в
    [гайді](incident-guide.md#стенограма--дослівно). Переказ своїми словами не зараховуємо.
-9. **Виправити (T2) — робите ви, не агент.** Прибрати хибне перевизначення для `staging` → Redeploy → smoke staging
-   зелений. Це і є «відкат» на staging: Instant Rollback працює лише для прод-деплоїв.
+9. **Виправити (T2) — робите ви, не агент.** Видалити **лише те перевизначення, яке ви додали на кроці 4** (інші змінні
+   гілки `staging` — `APP_ENV`, ключ staging — лишаються) → staging знову бере загальне значення Preview, тобто базу
+   staging → Redeploy → smoke staging зелений. Це і є «відкат» на staging: Instant Rollback працює лише для прод-деплоїв.
 10. **Postmortem** — промпт [R10 «Blameless postmortem»](prompts.md#r10) → `docs/incidents/<YYYY-MM-DD>-<slug>.md` за
     шаблоном набору: хронологія T0–T2 і час від поломки до алерту, вплив мовою користувача, першопричина з доказом на
     кожне твердження, «що НЕ було причиною», що спрацювало й що ні, дії з власником (роль). Жодних імен.
@@ -377,9 +433,11 @@ runbook на кроці 4).
     Червоний smoke о 2-й ночі; відкат на проді й Promote; база на паузі; ротація ключа; де журнали і скільки живуть;
     доступ PM до staging (що обрали на кроці 2); чого ніколи не робити. Промпт R11 універсальний, тому **дайте агенту
     разом із ним таблицю «Для домашки WS11» під R11:** Instant Rollback на Hobby лише на попередній прод-деплой і
-    Promote після нього; база на паузі → `/api/health` 503, `reason` `paused` → Resume project; журнали Vercel Hobby
-    — 1 год, Supabase Free — 1 доба; ключі для ротації; `supabase migration down`, `db reset --linked` і
-    `npx supabase@latest` у «ніколи». Саме ці розділи перевіряють рубрика C і PM.
+    Promote після нього; середовища з **двома** проєктами Supabase (назва і ref, без ключів); база на паузі → `/api/health`
+    503, `reason` `paused` → Resume project **у тому проєкті, де пауза** (staging — ще й перед UAT); журнали Vercel
+    Hobby — 1 год, Supabase Free — 1 доба в кожному проєкті; ключі для ротації окремо для Production і для гілки
+    `staging`; `supabase migration down`, `db reset --linked` і `npx supabase@latest` у «ніколи». Саме ці розділи
+    перевіряють рубрика C і PM.
 12. **Дія з postmortem → перевірка в CI (T3)** — промпт [R12 «Дія з postmortem → перевірка в CI»](prompts.md#r12).
     Наприклад, `/api/health` називає змінну, якої бракує чи яка хибна (лише назву), а smoke це показує. Перевірка
     червоніє на зламаному стані й зеленіє на виправленому. PR з посиланням на postmortem, у postmortem — посилання на
@@ -423,8 +481,10 @@ PM і ваша відповідь — або «не надходило».
 
    PR → злиття. Мітки на ключові PR зрізів 1–4 поставте самі (вебінтерфейс PR → Labels), інакше категорії будуть
    порожні.
-2. **Реліз-кандидат.** Оновіть `staging` з `main` (крок 2.9) → smoke staging зелений → у чат команди: «реліз-кандидат
-   на staging: <staging>». Бажано до кінця дня 4.
+2. **Реліз-кандидат.** Проєкт staging у Supabase активний (якщо на паузі — Resume project) → оновіть `staging` з `main`
+   (крок 2.13) → smoke staging зелений → дані для сценарію demo day на staging є (крок 2.6) → у чат команди:
+   «реліз-кандидат на staging: <staging>; тестові акаунти — з accounts.zip; дані staging окремі від проду». Бажано до
+   кінця дня 4.
 3. **Приймання PM.** PM проходить ключовий сценарій demo day на staging під тестовими акаунтами і підписує коментарем
    `Приймання релізу (@<pm>, <дата>): staging <URL>, сценарій ✅ / ❌ крок N → #M` — у вашому PR чи issue (домовтеся
    де). На ❌ PM відкриває issue «Відхилення від вимог»: виправлення — PR у `main` з `Fixes #N` → оновити `staging` → в
@@ -478,7 +538,7 @@ git status --short   # порожньо
 
 | Варіант | Що зробити | Бюджет | Промпт |
 |---|---|---|---|
-| **Зашифрована копія бази й відновлення** | `materials/ops-kit/bonus/backup.yml` → `.github/workflows/backup.yml`: вручну й за розкладом, закріплена версія Supabase CLI, дамп одразу шифрується, артефакт — лише зашифрований, короткий строк зберігання. `BACKUP_PASSPHRASE` і `SUPABASE_DB_URL` — секрети середовища `production`. Тренування відновлення за `bonus/restore-drill.md` з порівнянням кількості рядків; розділ «Відновлення» в runbook | ~2–3 год | [R17](prompts.md#r17) |
+| **Зашифрована копія бази й відновлення** | `materials/ops-kit/bonus/backup.yml` → `.github/workflows/backup.yml`: вручну й за розкладом, закріплена версія Supabase CLI, дамп одразу шифрується, артефакт — лише зашифрований, короткий строк зберігання. `BACKUP_PASSPHRASE` і `SUPABASE_DB_URL` — секрети середовища `production` (бекап — лише прод-база; не плутайте з `SUPABASE_DB_URL` середовища `staging`). Тренування відновлення за `bonus/restore-drill.md` з порівнянням кількості рядків; розділ «Відновлення» в runbook | ~2–3 год | [R17](prompts.md#r17) |
 | **Асистент чергового лише на читання** | `materials/ops-kit/bonus/oncall-assistant.yml` → `.github/workflows/oncall-assistant.yml`: при червоному smoke агент читає журнал прогону й пише в issue чернетку розбору з позначкою «чернетка агента, не перевірено». Без інструментів запису й без секретів проду; ключ моделі — ваш; ліміти й вартість — у здачі | ~2–3 год | [R18](prompts.md#r18) |
 
 Дамп у відкритому вигляді — ніде: ні в git, ні в артефакті, ні в журналі. У дампі даних є e-mail і хеші паролів

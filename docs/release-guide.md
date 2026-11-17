@@ -12,7 +12,8 @@ Actions, інструменти в CI. Цей гайд — про те, як н�
 [ліміти й вартість](cost-guide.md) · [набір `ops-kit`](../materials/ops-kit/README.md) ·
 необов'язково — [прапорці, канарка, blue-green, аварійний вимикач](release-strategies.md).
 
-Факти про тарифи й інтерфейси — **станом на 09.11.2026**, з посиланням на джерело. Назви кнопок у Vercel і GitHub
+Факти про тарифи й інтерфейси — **станом на 09.11.2026**, про окрему базу staging — **станом на 17.11.2026**, з
+посиланням на джерело. Назви кнопок у Vercel і GitHub
 змінюються частіше, ніж можливості: якщо пункту меню не знайшли — шукайте за змістом і перевірте в інтерфейсі.
 
 ## Навіщо в роботі
@@ -30,14 +31,15 @@ preview працювало» — не доказ для релізу. Staging і
 
 | Середовище | Звідки береться | Адреса | Хто дивиться | База Supabase |
 |---|---|---|---|---|
-| **Local** | `npm run dev` на вашому комп'ютері | `http://localhost:3000` | ви | ваш проєкт (як у `.env.local`) |
-| **Preview** | кожен push у гілку чи PR | своя на кожен деплой | ви, CodeRabbit, PM за посиланням | **та сама, що на проді** |
-| **Staging** | гілка `staging` | стабільна адреса гілки | PM приймає реліз-кандидат | **та сама, що на проді** |
-| **Production** | гілка `main` | прод-URL з першого рядка README | користувачі, клієнт, demo day | ваш проєкт |
+| **Local** | `npm run dev` на вашому комп'ютері | `http://localhost:3000` | ви | **проєкт staging** (`.env.local` = ключі staging) |
+| **Preview** | кожен push у гілку чи PR | своя на кожен деплой | ви, CodeRabbit, PM за посиланням | **проєкт staging** |
+| **Staging** | гілка `staging` | стабільна адреса гілки | PM приймає реліз-кандидат | **проєкт staging** |
+| **Production** | гілка `main` | прод-URL з першого рядка README | користувачі, клієнт, demo day | **прод-проєкт** |
 
 Чим staging відрізняється від preview: адреса **не змінюється** від деплою до деплою (PM зберігає її в закладках),
 у staging є **власні змінні середовища**, і туди потрапляє лише те, що вже злито в `main`. Preview — чернетка одного
-PR; staging — уся наступна версія продукту перед виходом.
+PR; staging — уся наступна версія продукту перед виходом. І preview, і staging працюють **на базі staging, ніколи на
+проді**: як це налаштувати — у розділі [«Staging з окремою базою»](#staging-з-окремою-базою).
 
 ## Staging на Vercel Hobby
 
@@ -45,7 +47,9 @@ Vercel має окрему можливість «Custom Environments» (іме�
 вона **лише на Pro та Enterprise**. На Hobby Vercel офіційно описує інший шлях — «Preview branch for staging»,
 доступний на всіх планах ([Vercel: Environments](https://vercel.com/docs/deployments/environments)):
 
-**staging на Hobby = гілка `staging` + адреса цієї гілки + змінні середовища лише для цієї гілки.**
+**staging на Hobby = гілка `staging` + адреса цієї гілки + змінні середовища лише для цієї гілки + власний проєкт
+Supabase.** Проєкт Supabase, міграції й змінні бази — у розділі [«Staging з окремою базою»](#staging-з-окремою-базою);
+його кроки 1–7 робіть **до** кроку 1 нижче, щоб перший деплой гілки `staging` одразу пішов у базу staging.
 
 1. **Гілка.** Створіть `staging` від `main`: у вебінтерфейсі GitHub (Branches → New branch) або
    `git switch -c staging main` і `git push -u origin staging`. Розробки в `staging` немає: вона **отримує зміни з
@@ -64,37 +68,289 @@ Vercel має окрему можливість «Custom Environments» (іме�
 4. **Передеплой.** Змінні застосовуються **лише до нових деплоїв**
    ([Vercel: Environment Variables](https://vercel.com/docs/environment-variables)). Після зміни змінної зробіть
    новий push у `staging` чи Redeploy.
-5. **Покажіть, що це staging.** На staging системна змінна `VERCEL_ENV` все одно дорівнює `preview`, тому D0
-   `/api/health` сам staging не відрізнить. Додайте назву середовища з `APP_ENV` у відповідь `/api/health` (лише
-   назву, це не секрет) чи в підвал сторінки. Рубрика A приймає обидва варіанти. Промпт —
-   [R03 «Staging: гілка, змінна для гілки, доступ PM»](prompts.md#r03).
+5. **Покажіть, що це staging і яка база.** На staging системна змінна `VERCEL_ENV` все одно дорівнює `preview`, тому
+   D0 `/api/health` сам staging не відрізнить. Додайте у відповідь `/api/health` назву середовища з `APP_ENV` і поле
+   `supabaseRef` — ref проєкту Supabase з `NEXT_PUBLIC_SUPABASE_URL` (обидва значення не секрети). Назву середовища
+   рубрика A приймає й у підвалі сторінки, а `supabaseRef` — лише в health: саме за ним видно, що база окрема. Промпт —
+   [R03 «Staging: гілка, власна база, змінна для гілки, доступ PM»](prompts.md#r03).
 
 Що **не** зараховується як staging: просто preview з PR; змінна, однакова для всіх середовищ; окрема розробка в
-`staging` повз `main`.
+`staging` повз `main`; staging чи preview, що ходить у прод-базу.
 
 **Ключ OpenRouter на staging.** Якщо у WS10 ви додали `OPENROUTER_API_KEY` у Preview, staging його успадкує. Тоді
 staging витрачає ті самі 50 безкоштовних запитів на добу, що й прод і ваш eval: додаткові ключі ліміт не збільшують.
 Плануйте UAT PM на staging і живий eval на різні UTC-доби. Детальніше — у [гайді вартості](cost-guide.md).
 
-## Спільна база: правила staging
+## Staging з окремою базою
 
-Staging і прод ходять в **одну базу Supabase**. Так домовились у WS6: другий безкоштовний проєкт Supabase часто вже
-зайнятий двійником WS9, а Branching (окрема база на гілку) — лише на Pro. Сам Supabase радить для staging окремий
-проєкт ([Supabase: Managing environments](https://supabase.com/docs/guides/deployment/managing-environments)). Ми
-свідомо обираємо компроміс: нуль гривень і нуль нових слотів, але **кожна дія на staging — це дія з бойовими
-даними**. Звідси правила:
+**Навіщо в роботі.** Staging — генеральна репетиція: той самий код, що завтра піде на прод, але **свої дані**. Якби
+staging писав у прод-базу, кожен клік PM на UAT, кожен preview з PR і кожен дріл змінював би те, що бачать
+користувачі. А на безкоштовному Supabase автоматичних резервних копій немає («Not included»,
+[Supabase Pricing](https://supabase.com/pricing)), тож відновити зіпсоване нічим. Тому сам Supabase радить для staging
+окремий проєкт: «You need a *new* project for staging»
+([Supabase: Managing environments](https://supabase.com/docs/guides/deployment/managing-environments)), а на сторінці
+цін пише, що Free дає два проєкти саме для цього: «one for development and one for production»
+([Supabase Pricing](https://supabase.com/pricing)). Усі факти цього розділу — станом на 17.11.2026.
+
+Раніше (WS6) staging ділив базу з продом — тепер так не робимо, бо тоді staging тренує не реліз, а обережність з
+бойовими даними, і будь-яка помилка на репетиції стає інцидентом на проді.
+
+**Терміни.**
+
+- **Проєкт Supabase** — окрема база Postgres зі своїм Auth, своїми ключами й своєю адресою `https://<ref>.supabase.co`.
+- **ref** — короткий ідентифікатор проєкту з цієї адреси. Він не секрет: браузер і так отримує його з
+  `NEXT_PUBLIC_SUPABASE_URL`.
+- **Слот** — одне з двох місць під активний безкоштовний проєкт. Призупинений проєкт слота не займає.
+- **Environment у GitHub** — «сейф» для секретів: відкрити його може лише job, що на нього посилається, і лише з
+  дозволених гілок.
+
+### Схема: хто в яку базу ходить
+
+| Середовище | База Supabase | Змінні бази у Vercel | Адреси входу (Auth URL) — у якому проєкті |
+|---|---|---|---|
+| Local | **staging** | `.env.local` = ключі staging (не в git) | `http://localhost:3000/**` — у staging |
+| Preview (PR) | **staging** | Preview, усі гілки = значення staging; секретного ключа немає | `https://*-<scope>.vercel.app/**` — у staging |
+| Staging | **staging** | ті самі Preview + лише для гілки `staging`: `APP_ENV=staging` і, якщо застосунку він потрібен, секретний ключ **staging** | Site URL і `https://<адреса-staging>/**` — у staging |
+| Production | **прод** | Production = значення проду | лише прод-адреси — у проді |
+
+Міграції: PR → CI (`db-check` на одноразовій базі) → злиття в `main` → job **`db-deploy-staging`** (база staging) →
+лише якщо зелено, job **`db-deploy`** (прод). Дані: у проді — те, що там уже є; у staging — міграції, seed, тестові
+акаунти й тестові записи. **Прод-дані в staging не копіюємо ніколи**: ні дампом, ні експортом CSV, ні «щоб було схоже».
+
+Порядок кроків нижче продиктований залежностями: база staging має бути готова (схема, акаунти, дані) **до** того, як
+на неї перемкнуться Preview; секрет і змінні в GitHub — **до** злиття job міграцій, інакше CI на `main` почервоніє;
+Preview перемикаємо **до** першого деплою гілки `staging`. У
+[walkthrough-dev, крок 2](walkthrough-dev.md#2-staging-з-окремою-базою-і-smoke-кожного-деплою-25-год--трек-a) ці кроки
+розкладено разом із гілкою й smoke.
+
+### 1. Звільнити слот
+
+1. Supabase Dashboard → список проєктів у **всіх** ваших організаціях: «The project limit applies across all
+   organizations where you are an Owner or Administrator», а «Paused projects do not count towards your free project
+   limit» ([Supabase: Billing](https://supabase.com/docs/guides/platform/billing-on-supabase)).
+2. Якщо активних уже два (прод і, наприклад, бонусний двійник WS9 `<team-slug>-factory`), у зайвому проєкті:
+   **Settings → General → Project availability → Pause Project**
+   ([Supabase: Pause or delete a project](https://supabase.com/docs/guides/platform/delete-project)). Призупинити можна
+   лише Free-проєкти.
+3. **Пауза, а не видалення:** призупинений проєкт можна відновити (Resume project) «up to 1 year after it was paused»
+   ([Supabase: Project pausing](https://supabase.com/docs/guides/platform/free-project-pausing)), а видалений — ні: «We
+   cannot recover deleted projects».
+4. Якщо це двійник WS9: його прод перестане відповідати, а розклади в його репо (smoke, фабрика) почнуть падати. У репо
+   двійника вимкніть ці workflow (Actions → workflow → Disable workflow; назву пункту перевірте в інтерфейсі). Оцінки
+   WS9 фінальні, докази лежать у git і Actions.
+5. **Прод не призупиняйте й не видаляйте.** Якщо зайвого проєкту немає, а обидва слоти потрібні, напишіть у чат курсу:
+   варіанту «staging на прод-базі» немає.
+
+### 2. Створити проєкт staging
+
+- Назва `<team-slug>-staging`, **регіон той самий, що в проду**: однакові затримки, і одна сторінка статусу стосується
+  обох проєктів.
+- Пароль бази — одразу в менеджер паролів: він знадобиться для рядка підключення.
+- **Налаштування Data API — як у проді** (точні назви перемикачів перевірте в інтерфейсі). Supabase попереджає:
+  «Default privileges differ between projects, depending on when the project was created and its Data API settings»,
+  і «Supabase is changing the platform default to revoke these automatic grants so that exposure becomes opt-in»
+  ([Supabase: Securing your API](https://supabase.com/docs/guides/api/securing-your-api)). Тому новий проєкт може
+  видати новим таблицям інші права, ніж ваш прод. Захист — у таблиці [«Що не переїде само»](#що-не-переїде-само).
+- Що забрати з Dashboard (лише в менеджер паролів, у Vercel чи в GitHub — не в git і не в чат): адресу проєкту,
+  publishable key, secret key і рядок **Session pooler** (порт 5432) з кнопки **Connect** проєкту **staging**. Формат
+  рядка: `postgresql://postgres.[PROJECT-REF]:[YOUR-DATABASE-PASSWORD]@[POOLER-HOST]:5432/postgres`
+  ([Supabase: Connect to your database](https://supabase.com/docs/guides/database/connecting-to-postgres)). **Копіюйте
+  рядок цілком з проєкту staging; не правте прод-рядок, замінюючи ref і пароль** — так найлегше помилитися базою.
+- Ref проєкту — частина адреси `https://<ref>.supabase.co` (і `postgres.<ref>` у рядку pooler).
+
+### 3. GitHub: environment `staging`, секрет і змінні з ref
+
+Робите **до** злиття PR з job міграцій staging (крок 4), у вебінтерфейсі GitHub:
+
+1. Settings → Environments → **New environment** `staging` → Deployment branches: **Selected branches** → `main`. Так,
+   саме `main`: міграції в обидві бази запускає лише конвеєр на `main`; PR-гілки й гілка `staging` секрету бази staging
+   не отримають.
+2. У environment `staging` — секрет **`SUPABASE_DB_URL`** = рядок Session pooler проєкту staging (крок 2). Секрети
+   environment бачать лише jobs, що на нього посилаються: «These secrets are only available to workflow jobs that use
+   the environment» ([GitHub: Managing environments](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments)).
+   На GitHub Free environments доступні лише в публічних репо; ваші репо публічні, а environment `production` у вас уже
+   є. Якщо репо приватне — напишіть у чат курсу.
+3. Settings → Secrets and variables → Actions → **Variables** → Repository variables: **`SUPABASE_STAGING_REF`** = ref
+   staging, **`SUPABASE_PROD_REF`** = ref проду. Це не секрети, а запобіжник: job звіряє з ними, куди веде рядок
+   підключення.
+4. Гігієна: `SUPABASE_DB_URL` має бути **лише** секретом середовищ (`staging` і `production`), а не секретом
+   репозиторію (Repository secrets).
+
+### 4. Job міграцій staging: спершу staging, потім прод
+
+Зразок — [`materials/ops-kit/ci-examples/db-deploy-staging.yml`](../materials/ops-kit/ci-examples/db-deploy-staging.yml)
+(**приклад, не запускали**); агенту ту саму зміну доручає промпт [R03](prompts.md#r03). Що в ньому:
+
+- новий job `db-deploy-staging`: лише на `main` (push і ручний запуск), `environment: staging`, ті самі кроки dry run →
+  `supabase db push --db-url` закріпленою CLI 2.x, що й у `db-deploy`;
+- **запобіжник** першим кроком: бере ref з імені користувача `postgres.<ref>` у рядку підключення і зупиняє job
+  (`exit 1`), якщо секрету немає, рядок не схожий на Session pooler або ref ≠ `SUPABASE_STAGING_REF`. У журнал іде лише
+  ref (він публічний) — рядок «Ціль міграцій: проєкт <ref> (staging)»;
+- **без пропуску й без запасного шляху через `link`**: зник секрет чи веде не туди — job червоний, і прод не мігрує;
+- `db-deploy` (прод) тепер `needs: … db-deploy-staging` і має дзеркальний запобіжник: ref = `SUPABASE_PROD_REF`;
+- новий вхід ручного запуску `include_seed_staging`: seed у staging, а наявний `include_seed` і далі стосується лише
+  проду.
+
+**Перший прогін.** Злиття PR уже запускає `db-deploy-staging`: у порожню базу staging накотяться **всі** міграції з
+нуля. Це заодно доводить, що історію міграцій можна відтворити. Прод-job після нього нічого нового не застосує. Далі —
+Actions → CI → Run workflow (гілка `main`, `include_seed_staging` = true) для seed. Чи застосує CLI seed, коли всі
+міграції вже накочено, ми не перевіряли: дивіться журнал кроку dry run; якщо seed там немає — дані для UAT введіть
+через застосунок (крок 5).
+
+**Якщо staging впав або спить.** Міграція впала на staging → `db-deploy` (прод) **не запускається**: це і є ворота,
+зламана міграція не доходить до проду. Виправлення — нова міграція вперед, окремим PR. Staging на паузі → `db push` не
+під'єднається → прод теж не мігрує: Resume project у staging і перезапуск впалих jobs цього прогону в Actions (назву
+кнопки перевірте в інтерфейсі).
+
+**Еквіваленти в оцінюванні.** Зараховуємо будь-який шлях, де міграції в базу staging застосовує **CI з секрету
+environment** із запобіжником ref, а не ноутбук, — зокрема тригер на push у гілку `staging`, як у прикладі Supabase.
+Тоді в runbook запишіть пастку: PR-preview між злиттям і оновленням `staging` працюватимуть на старій схемі.
+
+### 5. Тестові акаунти, локальна розробка й дані для UAT
+
+1. Поточний `.env.local` (там прод) за бажання збережіть як `.env.prod.local`: правило `.env*` у `.gitignore` шаблону
+   його вже покриває. Агент ці файли не читає.
+2. У `.env.local` — значення **staging**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
+   `SUPABASE_SECRET_KEY` і **той самий** `DEMO_USER_PASSWORD`, що й для проду.
+3. `npm run users:demo` створить ті самі акаунти з `supabase/demo-users.json` у staging (скрипт ідемпотентний, код не
+   змінюємо). PM користується тим самим `accounts.zip`, нічого нового не надсилаємо. У справжньому проєкті паролі
+   тестових акаунтів staging і проду варто розводити; тут їх зводимо, бо дані синтетичні.
+4. **Дані для UAT на staging.** Свіжа база staging має лише міграції, seed і акаунти. Довідники й записи, які ви
+   колись створили на проді через інтерфейс (у демо — підрозділи й посади, без яких не подати заявку), на staging
+   **відсутні**, і сценарій PM упаде. Два правильні шляхи: синтетичні довідники — у `supabase/seed.sql` звичайним PR
+   (ідемпотентно, `on conflict …`, лише `*@example.test`) і Run workflow з `include_seed_staging`; або введіть їх на
+   staging через застосунок як тестовий адміністратор. **Прод-дані не копіюємо.**
+5. **Хто ще читає `.env.local`.** З WS8 його читають і `npm run uat` / `npm run test:e2e` (Playwright завантажує
+   `.env.local`, створює й видаляє синтетичних `uat-*` користувачів секретним ключем). Тепер ці записи йдуть у
+   staging, тож UAT запускайте **проти staging**: `npm run uat -- --url <staging>`, а не проти проду — інакше браузер
+   увійде в прод, а синтетичні користувачі з'являться в staging. Якщо захист Vercel на staging увімкнено, Playwright
+   потрібен заголовок обходу: приклад `extraHTTPHeaders` з `x-vercel-protection-bypass` і
+   `x-vercel-set-bypass-cookie` — у [документації Vercel](https://vercel.com/docs/deployment-protection/methods-to-bypass-deployment-protection/protection-bypass-automation)
+   (станом на 17.11.2026; у шаблоні курсу цього заголовка немає — доручіть агенту через [R03](prompts.md#r03)).
+   Те, що справді має йти в прод (наприклад, `users:demo` для проду), запускайте явно з окремим файлом:
+   `node --env-file=.env.prod.local scripts/create-demo-users.mjs`. `.env.local` туди-сюди не перемикайте.
+6. **`vercel env pull` перепише `.env.local`.** Ця команда «will export development environment variables to a local
+   `.env.local` file» ([Vercel CLI: env](https://vercel.com/docs/cli/env), станом на 17.11.2026). Тож у Vercel у
+   середовищі **Development** мають бути значення staging або нічого (крок 7), інакше одна команда тихо поверне
+   локальну розробку на прод.
+
+### 6. Auth у проєкті staging
+
+- Authentication → налаштування **як у проді**: реєстрацію вимкнено, «Confirm email» — як у вашому прод-проєкті (точні
+  назви перевірте в інтерфейсі). Якщо в проді ви щось змінювали, повторіть це в staging.
+- URL Configuration у **staging**: Redirect URLs — `https://*-<scope>.vercel.app/**` (preview) і
+  `http://localhost:3000/**`; коли з'явиться адреса гілки `staging` — Site URL = ця адреса і ще
+  `https://<адреса-staging>/**`. Wildcard для Vercel preview і точні адреси для проду радить
+  [Supabase: Redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls).
+- URL Configuration у **проді**: після перемикання змінних Vercel (крок 7) лишіть **лише прод-адреси**: приберіть
+  `localhost`, preview-wildcard і адресу staging, якщо додавали.
+- **Пастка:** `supabase config push` з прод-значеннями `site_url` у `supabase/config.toml` переписав би Auth staging.
+  URL staging задаємо в Dashboard, а `config push` у staging не робимо.
+
+### 7. Vercel: змінні бази для кожного середовища
+
+Спершу інвентаризація: які змінні Supabase читає **ваш** застосунок —
+`git grep -n -o -E "process\.env\.[A-Z_]+" -- src` (лише назви). Зазвичай це три:
+
+| Змінна | Production | Preview, усі гілки | Preview, лише гілка `staging` | Development |
+|---|---|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | прод | **staging** | — (бере загальне Preview) | staging або нічого |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | прод | **staging** | — | staging або нічого |
+| `SUPABASE_SECRET_KEY` (якщо є з WS7: запрошення через Admin API) | прод | **нічого** | **ключ staging** | нічого |
+
+**Правило секретного ключа:** прод-ключ — лише Production; ключ staging — лише гілка `staging`; у PR-preview —
+жодного `sb_secret_…`. Preview збирається з коду будь-якої гілки, а секретний ключ обходить RLS: «A secret key bypasses
+every Row Level Security policy you have»
+([Supabase: API keys](https://supabase.com/docs/guides/api/api-keys)). Це правило **замінює** вказівку WS7 «лише
+Production»: без ключа staging адмінські функції на staging впадуть з «SUPABASE_SECRET_KEY не задано», а «виправлення»
+галочкою Preview на прод-ключі віддало б прод-ключ кожному PR-preview.
+
+**Як розділити змінну, не зламавши прод.** У WS6 кожна змінна — один запис з кількома галочками (Production, Preview,
+можливо Development). Якщо просто змінити значення, воно зміниться **в усіх** позначених середовищах: «The new value
+applies to every Environment that the variable covers» ([Vercel CLI: env](https://vercel.com/docs/cli/env)). Тому для
+кожної змінної з таблиці:
+
+1. Відкрийте наявний запис → лишіть галочку **лише Production** → Save. Значення — прод, без змін.
+2. **Add new** → та сама назва → лише **Preview**, усі гілки (без вибору конкретної) → значення staging. Для
+   `SUPABASE_SECRET_KEY` замість цього: Preview → **гілка `staging`** → ключ staging.
+3. Development: значення staging або без галочки.
+4. Перевірка: жодне значення **не-Production** (Preview і Development) не вказує на прод-проєкт. За бажанням —
+   `vercel env ls` (лише назви й середовища; значення не друкуйте).
+
+Перевизначення для гілки має пріоритет над загальним Preview: «Any branch-specific variables will override other
+preview environment variables with the same name» ([Vercel: Environment variables](https://vercel.com/docs/environment-variables)).
+Тому `NEXT_PUBLIC_SUPABASE_*` задаємо на рівні **всього** Preview, а не лише для гілки `staging`: тоді PR-preview теж
+ходять у staging, а крок дрілу «видалити хибне перевизначення» повертає staging до бази staging. Якщо Supabase
+підключено через Vercel Marketplace, перевірте, у які середовища інтеграція пише змінні.
+
+**Redeploy.** Зміни змінних діють лише на нові деплої, а `NEXT_PUBLIC_*` вбудовуються під час збірки. Після
+перемикання: Redeploy останнього деплою `staging` (якщо гілка вже є) і новий push у кожен відкритий PR. **Старі
+preview-адреси**, зібрані раніше, далі ходять у прод: не відкривайте їх і не надсилайте PM.
+
+**Чому саме так на Hobby.** «Preview branch for staging» доступний на «All plans, including Hobby», а Custom
+Environments — лише Pro і Enterprise ([Vercel: Environments](https://vercel.com/docs/deployments/environments)). Там
+само Vercel радить «a custom environment or preview branch with staging credentials when you need separate resources».
+
+### 8. Перевірка: база справді окрема
+
+1. Прод `/api/health` (GET без входу) → `supabaseRef` = ref проду.
+2. Прогін smoke на деплой `staging`: у журналі рядок JSON health з `"appEnv":"staging"` і `supabaseRef` = ref staging
+   (≠ прод). `scripts/smoke.mjs` з набору вже друкує всю відповідь health.
+3. Прогін smoke на деплой **будь-якого PR-preview** після перемикання змінних: `supabaseRef` = ref staging. Без цього
+   пункту перевизначення лише для гілки `staging` пройшло б перевірку, хоча PR-preview далі писали б у прод.
+4. Прогін CI на `main`: у `db-deploy-staging` рядок «Ціль міграцій: проєкт <ref> (staging)» з тим самим ref, що й у
+   п. 2, і крок «Apply migrations» — `success`.
+5. Вхід на staging акаунтом з `accounts.zip` працює; прод `/api/health` не змінився.
+
+### Правила staging
 
 | Правило | Чому |
 |---|---|
-| **Лише тестові акаунти** з `accounts.zip`, жодних справжніх людей і даних | staging пише в ті самі таблиці, що й прод |
-| Тестові записи — з помітною міткою, наприклад `[staging]` у назві | щоб їх легко знайти й прибрати й не показати клієнту випадково |
-| **Жодних руйнівних дій:** видалення чужих записів, масових операцій, «очистити все» | відновити нічим: на Free немає резервних копій |
-| **Міграції — лише ті, що додають** (нова таблиця, нова колонка, що може бути порожньою, новий індекс) | код на staging і код на проді мають однаково працювати з тією самою схемою |
-| Міграції — лише через `main` і job `db-deploy`, ніколи вручну з `staging` | інакше staging змінить схему проду для всіх |
-| **Інцидент-дріл — без міграцій:** ламаємо змінну середовища чи код | база, прод і чужі дані не страждають |
-| Ніякого `supabase migration down` і `db reset --linked` | обидві команди знищують дані: `migration down` не «відкочує крок», а скидає схему й накочує міграції заново |
+| **Лише синтетичні дані**, акаунти `*@example.test`; прод-даних у staging немає | staging бачать PM, preview і агент на дрілі; копія проду — це витік, а не «реалістичність» |
+| Міграції — лише через `main` і CI (`db-deploy-staging`, потім `db-deploy`), ніколи вручну з ноутбука | лише так схема спершу проходить справжню базу Supabase, а прод не мігрує після помилки |
+| Ніякого `supabase migration down` і `db reset --linked` проти **жодного** з ваших проєктів | обидві команди знищують дані: `migration down` не «відкочує крок», а скидає схему й накочує міграції заново; резервних копій на Free немає |
 | Supabase CLI — закріплена в шаблоні версія (`npx supabase` з проєкту), не `npx supabase@latest` | CLI 3.0.0 (02.11.2026) за замовчуванням спрямовує команди бази в **локальну** базу ([Supabase CLI v3](https://supabase.com/changelog/supabase-cli-v3)) |
-| Секретний ключ Supabase (`sb_secret_…`) — ніколи в змінних Preview | preview збирається з коду будь-якої гілки; RLS захищає дані, лише поки працює публічний ключ |
+| Прод-ключ (будь-який) — лише Production; секретний ключ staging — лише гілка `staging`; у PR-preview — жодного `sb_secret_…` | preview збирається з коду будь-якої гілки, а секретний ключ обходить RLS |
+| **Інцидент-дріл — лише staging, без міграцій і без видалення даних**, без ротації ключів у Supabase | схему не відкотити, лише нова міграція вперед; резервних копій немає; базою staging користуються PM на UAT і всі preview, тож зламана база staging зупиняє всю команду |
+| Перед UAT, демо чи дрілом — Dashboard → проєкт staging активний | staging на Free засинає так само, як прод ([нижче](#пауза-staging)) |
+
+### Що не переїде само
+
+Новий проєкт отримує лише міграції, seed і акаунти з `users:demo`. Симптом: на staging щось не працює, а на проді
+працює. Ліки щоразу ті самі — **перенести в міграцію через звичайний PR** (тоді воно з'явиться в обох базах), а не
+клацати вдруге руками лише в staging.
+
+| Що | Як виправити |
+|---|---|
+| Те, що на проді колись зробили руками в Dashboard: бакети Storage, розширення, політики поза міграціями | нова міграція |
+| **Права (GRANT) на таблиці.** Проєкти, створені в різний час, можуть мати різні права за замовчуванням (цитата в кроці 2) | кожна міграція містить явні `grant` для `anon` / `authenticated` / `service_role` поруч з RLS, як міграція `profiles` у шаблоні. Бачите на staging «permission denied» — міграція вперед з потрібним `grant`, а не перемикач лише в staging |
+| Довідники й записи, створені на проді через інтерфейс | синтетичні — у `seed.sql` або через застосунок на staging (крок 5); прод-даних не копіюємо |
+
+### Пауза staging
+
+Free-проєкт засинає «after 1 week of inactivity» ([Supabase Pricing](https://supabase.com/pricing)). «A few requests a
+day is usually enough to keep a project running, though that isn't a guarantee», а запити застосунку й відкриття
+проєкту в Dashboard рахуються як активність ([Supabase KB](https://supabase.com/kb/faqs/platform/free-project-pausing)).
+Staging будять локальна розробка, PR-preview і smoke кожного деплою — усі вони тепер ходять у staging. Але щоденний
+розклад smoke будить лише прод. Тож правило просте: **перед UAT, демо чи дрілом відкрийте Dashboard → проєкт staging і,
+якщо він на паузі, натисніть Resume project.** Дані й налаштування повернуться
+([Supabase: Project pausing](https://supabase.com/docs/guides/platform/free-project-pausing)). Скільки триває
+відновлення, документація не каже.
+
+### Якщо staging уже ходив у прод-базу
+
+1. Звільнити слот і створити `<team-slug>-staging` (кроки 1–2).
+2. GitHub: environment `staging`, секрет, змінні з ref (крок 3).
+3. PR за оновленим [R03](prompts.md#r03): `supabaseRef` у health, job `db-deploy-staging` із запобіжником,
+   `include_seed_staging` → злиття → прогін зелений → Run workflow з `include_seed_staging` (крок 4).
+4. `.env.local` → staging, `npm run users:demo`, дані для UAT (крок 5); Auth staging (крок 6).
+5. Vercel: розділити змінні за таблицею кроку 7, видалити старе перевизначення гілки `staging` з прод-значеннями, якщо
+   воно є (`APP_ENV=staging` лишається); Redeploy `staging` і новий push у відкриті PR.
+6. Перевірка (крок 8); прод-Auth — лише прод-адреси.
+7. Runbook: таблиця середовищ з двома проєктами (назва і ref, без ключів), «база на паузі» для кожного, ротація ключа
+   окремо для Production і для гілки `staging`.
+8. Тестові записи, які раніше потрапили з staging у прод, прибирайте лише свої, через інтерфейс застосунку й по
+   одному — без масових запитів до бази.
 
 ### Expand/contract: як змінити схему, не зламавши ні staging, ні прод
 
@@ -111,28 +367,37 @@ Staging і прод ходять в **одну базу Supabase**. Так до�
    update public.requests set comment = note where comment is null;
    ```
 
-2. **Код (PR 2, після того як `db-deploy` застосував PR 1).** Код читає й пише `comment`. Обидві колонки існують, тож
-   працюють і preview, і staging, і прод, і відкат на попередній деплой.
+2. **Код (PR 2, після того як `db-deploy-staging` і `db-deploy` застосували PR 1).** Код читає й пише `comment`.
+   Обидві колонки існують в обох базах, тож працюють і preview, і staging, і прод, і відкат на попередній деплой.
 3. **Contract (PR 3, щонайменше на один реліз пізніше).** Прибрати `note`. Це руйнівна міграція, тож **не цього
-   тижня**: у WS11 міграції лише додають. Contract — після demo day, окремим PR, коли старий код давно не на проді.
+   тижня**. Contract — після demo day, окремим PR, коли старого коду вже немає ні на проді, ні на staging (спершу
+   оновіть `staging` з `main`).
+
+**Чому це потрібно і з окремою базою.** У кожен момент існує код, старіший за схему: прод під час збірки Vercel, прод
+після Instant Rollback і staging між злиттям у `main` і оновленням гілки `staging`. Тому кожна міграція має бути
+сумісна з кодом, що зараз на проді і на staging. PR-preview працюють на схемі бази staging (= схема `main`): якщо PR
+містить і міграцію, і код, що її використовує, preview буде червоним до злиття міграції — живий приклад, навіщо
+міграція йде окремим PR першою.
 
 Промпт для перевірки міграції — у [R01 «Аудит готовності до експлуатації»](prompts.md#r01): агент лише читає й
 каже, чи сумісна міграція з кодом у `main` і чи її треба розбити.
 
 ## Спершу міграція, потім код
 
-У шаблоні міграції застосовує лише job `db-deploy`: на `main`, після злиття, у середовищі GitHub `production`. Vercel
-тим часом збирає той самий коміт `main` **паралельно**: нічого не гарантує, що схема оновиться раніше, ніж новий код
-стане продом. На Hobby цей порядок не замкнений автоматично. Vercel має «Deployment Checks», що тримають прод-деплой
+Міграції застосовує лише CI на `main`, після злиття: спершу job `db-deploy-staging` у базу staging (середовище GitHub
+`staging`), і лише якщо там зелено — job `db-deploy` у прод (середовище `production`); див.
+[крок 4](#4-job-міграцій-staging-спершу-staging-потім-прод). Vercel тим часом збирає той самий коміт `main`
+**паралельно**: нічого не гарантує, що схема оновиться раніше, ніж новий код стане продом. На Hobby цей порядок не замкнений автоматично. Vercel має «Deployment Checks», що тримають прод-деплой
 до зелених перевірок GitHub, але чи працюють вони на Hobby, ми не перевірили. Тому правило — у порядку PR:
 
-- **Міграція, що додає, — окремим PR і першою.** Злили → `db-deploy` зелений (у Actions, крок «Apply migrations» —
-  `success`, а не `skipped`) → лише тоді PR з кодом, який її використовує.
-- **Кожна міграція сумісна з кодом, що зараз на проді.** Саме тому expand/contract.
+- **Міграція — окремим PR і першою.** Злили → **обидва** jobs, `db-deploy-staging` і `db-deploy`, зелені (у Actions
+  крок «Apply migrations» — `success`, а не `skipped`) → лише тоді PR з кодом, який її використовує.
+- **Кожна міграція сумісна з кодом, що зараз на проді і на staging.** Саме тому expand/contract.
 
 **Чому відкат ніколи не повертає схему.** Vercel Instant Rollback перемикає домен на старий деплой і нічого не
-перезбирає. До бази він не торкається: міграції, які застосував `db-deploy`, лишаються. Після відкату **старий код
-працює з новою схемою**, і це безпечно, лише якщо міграції тільки додавали. Відкат схеми в Supabase — це не «undo», а
+перезбирає. До бази він не торкається: міграції, які застосував `db-deploy`, лишаються — і в проді, і тим паче в
+staging. Після відкату **старий код працює з новою схемою**, і це безпечно, лише якщо міграція сумісна зі старим кодом
+(expand/contract). Відкат схеми в Supabase — це не «undo», а
 **нова міграція вперед** через звичайний PR
 ([Supabase: Database migrations](https://supabase.com/docs/guides/deployment/database-migrations)).
 
@@ -170,7 +435,7 @@ PM має відкрити staging у браузері. На Hobby немає к
 | **Спільне посилання** (Shareable Link) | розробник створює посилання на деплой і передає PM у чаті команди | **одне посилання на акаунт** | PM без акаунта Vercel |
 | **Захист вимкнено** | Settings → Deployment Protection → Vercel Authentication вимкнено (як у WS6 `bootstrap.md`) | відкриті **всі** preview проєкту, не лише staging; окремого перемикача «лише для гілки» серед можливостей Hobby ми не знайшли — перевірте в інтерфейсі | PM без акаунта, а preview й так публічні з WS6 |
 
-Дані на staging захищає не Vercel, а вхід у застосунок і RLS: без тестового акаунта PM побачить лише сторінку входу.
+Дані бази staging захищає не Vercel, а вхід у застосунок і RLS: без тестового акаунта PM побачить лише сторінку входу.
 Пароль тестового акаунта — лише в `accounts.zip`; у коментарях, на знімках і в чаті його не пишемо.
 
 ## Smoke кожного деплою
@@ -380,7 +645,8 @@ PM.
 
 - **Staging на Hobby** = гілка `staging` + адреса гілки + змінна лише для гілки (`APP_ENV=staging`), видна в
   `/api/health` чи на сторінці. Custom Environments — це Pro.
-- **База спільна з продом:** лише тестові акаунти, жодних руйнівних дій, міграції лише ті, що додають, дріл — без
+- **Staging має власну базу Supabase:** preview, staging і локальна розробка — на ній, прод — лише на прод-базі;
+  міграції CI застосовує спершу в staging, потім у прод (із запобіжником ref); прод-даних у staging немає; дріл — без
   міграцій. Зміна схеми — expand/contract.
 - **Спершу міграція окремим PR, потім код.** Відкат коду ніколи не повертає схему.
 - **Smoke кожного деплою** — за адресою деплою з `client_payload.url` і заголовком `x-vercel-protection-bypass`;
