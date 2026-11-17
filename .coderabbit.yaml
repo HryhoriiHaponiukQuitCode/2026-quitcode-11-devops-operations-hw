@@ -156,7 +156,7 @@ reviews:
     - path: "docs/**"
       instructions: |
         Інструкції курсу (walkthrough-dev, walkthrough-pm, prompts, release-guide, signals-guide,
-        incident-guide, cost-guide). У PR здачі не змінюються — будь-яка зміна ❌. Помилку в матеріалах
+        incident-guide, cost-guide, release-strategies, skills). У PR здачі не змінюються — будь-яка зміна ❌. Помилку в матеріалах
         повідомляють окремим issue, а не в PR здачі.
 
     - path: "materials/**"

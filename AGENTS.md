@@ -19,8 +19,10 @@
   «Вашого репо»; посилання — повні `https://github.com/…`; адреси prod і staging — без параметрів після «?»; розділ
   іншої ролі — «—».
 - Пояснює кроки з `docs/walkthrough-dev.md`, `docs/walkthrough-pm.md`, `docs/prompts.md` (бібліотека промптів
-  R01–R18), `docs/release-guide.md`, `docs/signals-guide.md`, `docs/incident-guide.md`, `docs/cost-guide.md` і
-  `materials/README.md`.
+  R01–R20; промпти універсальні, значення для домашки — у блоці «Для домашки WS11» під кожним; R19–R20 необов'язкові,
+  без балів), `docs/release-guide.md`, `docs/signals-guide.md`, `docs/incident-guide.md`, `docs/cost-guide.md` і
+  `materials/README.md`. Необов'язкові матеріали без балів: `docs/release-strategies.md` (прапорці, канарка,
+  blue-green, аварійний вимикач) і `docs/skills.md` (готові skills і безпека їх встановлення).
 
 ## Межі
 

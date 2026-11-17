@@ -387,7 +387,11 @@ issue з міткою «чернетка агента, не перевірено
 [R02] ланцюг постачання · [R03] staging · [R04] smoke кожного деплою · [R05] алерт · [R06] трекер помилок ·
 [R07] журнал `llm.call` · [R08] профіль «лише пропонує» · [R09] розбір інциденту агентом · [R10] blameless
 postmortem · [R11] runbook · [R12] дія з postmortem → перевірка в CI · [R13] реліз · [R17] бонус: копія бази й
-відновлення · [R18] бонус: асистент чергового.
+відновлення · [R18] бонус: асистент чергового. Необов'язково, без балів: [R19] аварійний вимикач · [R20] агент як
+дашборд.
+
+Промпти універсальні: те, що залежить від проєкту, — місця `<…>`. Значення для цієї домашки (файли набору, назви
+секретів, гілки) — у блоці «Для домашки WS11» під кожним промптом.
 
 [R02]: https://github.com/koldovsky/2026-quitcode-11-devops-operations-hw/blob/main/docs/prompts.md#r02
 [R03]: https://github.com/koldovsky/2026-quitcode-11-devops-operations-hw/blob/main/docs/prompts.md#r03
@@ -403,3 +407,5 @@ postmortem · [R11] runbook · [R12] дія з postmortem → перевірка
 [R13]: https://github.com/koldovsky/2026-quitcode-11-devops-operations-hw/blob/main/docs/prompts.md#r13
 [R17]: https://github.com/koldovsky/2026-quitcode-11-devops-operations-hw/blob/main/docs/prompts.md#r17
 [R18]: https://github.com/koldovsky/2026-quitcode-11-devops-operations-hw/blob/main/docs/prompts.md#r18
+[R19]: https://github.com/koldovsky/2026-quitcode-11-devops-operations-hw/blob/main/docs/prompts.md#r19
+[R20]: https://github.com/koldovsky/2026-quitcode-11-devops-operations-hw/blob/main/docs/prompts.md#r20

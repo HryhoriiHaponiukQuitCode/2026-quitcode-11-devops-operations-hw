@@ -10,6 +10,7 @@
 
 Корисні посилання: [README, трек B](../README.md#трек-розробника--100--10-балів) ·
 [трек розробника](walkthrough-dev.md) · [промпти R04–R07](prompts.md#r04) ·
+необов'язково — [R20: агент як дашборд](prompts.md#r20) ·
 [середовища й smoke кожного деплою](release-guide.md) · [інцидент](incident-guide.md) ·
 [ліміти й вартість](cost-guide.md) · [набір `ops-kit`](../materials/ops-kit/README.md).
 

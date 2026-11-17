@@ -9,7 +9,8 @@
 Корисні посилання: [README, трек C](../README.md#трек-розробника--100--10-балів) ·
 [трек розробника](walkthrough-dev.md) · промпти [R08](prompts.md#r08) · [R09](prompts.md#r09) ·
 [R10](prompts.md#r10) · [R11](prompts.md#r11) · [R12](prompts.md#r12) · [сигнали](signals-guide.md) ·
-[staging, відкат і Promote](release-guide.md) · [набір `ops-kit`](../materials/ops-kit/README.md).
+[staging, відкат і Promote](release-guide.md) · [набір `ops-kit`](../materials/ops-kit/README.md) ·
+необов'язково — [аварійний вимикач проти відкату](release-strategies.md) і промпт [R19](prompts.md#r19).
 
 ## Навіщо в роботі
 
