@@ -388,7 +388,7 @@ issue з міткою «чернетка агента, не перевірено
 [R07] журнал `llm.call` · [R08] профіль «лише пропонує» · [R09] розбір інциденту агентом · [R10] blameless
 postmortem · [R11] runbook · [R12] дія з postmortem → перевірка в CI · [R13] реліз · [R17] бонус: копія бази й
 відновлення · [R18] бонус: асистент чергового. Необов'язково, без балів: [R19] аварійний вимикач · [R20] агент як
-дашборд.
+дашборд · [R21] періодичний огляд експлуатації за розкладом.
 
 Промпти універсальні: те, що залежить від проєкту, — місця `<…>`. Значення для цієї домашки (файли набору, назви
 секретів, гілки) — у блоці «Для домашки WS11» під кожним промптом.
@@ -409,3 +409,4 @@ postmortem · [R11] runbook · [R12] дія з postmortem → перевірка
 [R18]: https://github.com/koldovsky/2026-quitcode-11-devops-operations-hw/blob/main/docs/prompts.md#r18
 [R19]: https://github.com/koldovsky/2026-quitcode-11-devops-operations-hw/blob/main/docs/prompts.md#r19
 [R20]: https://github.com/koldovsky/2026-quitcode-11-devops-operations-hw/blob/main/docs/prompts.md#r20
+[R21]: https://github.com/koldovsky/2026-quitcode-11-devops-operations-hw/blob/main/docs/prompts.md#r21

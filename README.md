@@ -14,7 +14,8 @@
   [безкоштовні тарифи, ліміти й вартість](docs/cost-guide.md) ·
   [матеріали для копіювання](materials/README.md)
 - **Додатково, без балів:** [як викотити функцію й нічого не зламати: прапорці, канарка, blue-green, аварійний
-  вимикач](docs/release-strategies.md) · [готові agent skills і як їх безпечно встановлювати](docs/skills.md)
+  вимикач](docs/release-strategies.md) · [готові agent skills і як їх безпечно встановлювати](docs/skills.md) ·
+  [задачі за розкладом: агент, який сам переглядає експлуатацію](docs/scheduled-tasks.md)
 - **Гайди WS8, які діють без змін:** [D0 і тестові акаунти](https://github.com/koldovsky/2026-quitcode-08-quality-hw/blob/main/docs/deploy-d0.md) ·
   [ворота](https://github.com/koldovsky/2026-quitcode-08-quality-hw/blob/main/docs/gates-guide.md)
 
@@ -330,13 +331,14 @@ staging → червоний smoke → алерт → розбір агенто�
 | Шлях | Що це |
 |---|---|
 | `docs/walkthrough-dev.md`, `docs/walkthrough-pm.md` | покрокові інструкції з бюджетами часу, доказами й промптами |
-| `docs/prompts.md` | бібліотека промптів WS11 (R01–R18 і необов'язкові R19–R20): універсальні промпти, значення для домашки, коли давати, що перевірити в результаті |
+| `docs/prompts.md` | бібліотека промптів WS11 (R01–R18 і необов'язкові R19–R21): універсальні промпти, значення для домашки, коли давати, що перевірити в результаті |
 | `docs/release-guide.md` | staging на Vercel Hobby, smoke кожного деплою, реліз, відкат і Promote, ланцюг постачання |
 | `docs/signals-guide.md` | алерт у Telegram, трекер помилок, структурований журнал і `llm.call`, uptime, глибина health check |
 | `docs/incident-guide.md` | дріл, профіль «лише пропонує», серйозність, postmortem без пошуку винних, runbook |
 | `docs/cost-guide.md` | межі безкоштовних тарифів, пауза Supabase, вартість платного стеку й одного запуску |
 | `docs/release-strategies.md` | необов'язково: прапорці, темний запуск, канарка, blue-green, аварійний вимикач проти відкату — що з цього є на Hobby |
 | `docs/skills.md` | необов'язково: перевірені готові agent skills для експлуатації й як їх безпечно встановлювати |
+| `docs/scheduled-tasks.md` | необов'язково: задачі за розкладом — які періодичні перевірки мають сенс, механізми (GitHub Actions, хмарні задачі, Desktop, `/loop`, cron), безпека, приклад щотижневого огляду лише на читання |
 | `materials/README.md` | що з матеріалів куди покласти |
 | `materials/ops-kit/` | набір розробника: workflow smoke деплою з алертом, `dependabot.yml`, `.npmrc`, `release.yml`, логер `llm.call` з тестом, профіль «лише пропонує», шаблони runbook і postmortem, бонус `backup.yml` |
 | `materials/pm-kit/` | шаблони PM: операційні вимоги, повідомлення клієнту, чекліст demo day, записка про вартість |
