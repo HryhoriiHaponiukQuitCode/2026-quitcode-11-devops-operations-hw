@@ -298,6 +298,46 @@ Next.js 15.0.0; Next.js кличе цю функцію на кожну поми�
 (Sentry) або повідомлення в Telegram (шлях 2) — із замазаним chat id. Потім тестовий маршрут **приберіть** або закрийте
 роллю адміністратора: публічна кнопка «зламати сервер» — сама по собі вразливість.
 
+### Реальний приклад: Sentry у демо (17.11.2026)
+
+Необов'язкове читання, балів не змінює. Так шлях 1 зроблено в демо-продукті курсу — коміт
+[`1172bf2`](https://github.com/koldovsky/2026-quitcode-06-leave-portal-demo/commit/1172bf2377923a844500e7237196e91a5204d3ce)
+у гілці `ws11/sentry` публічного демо-репо. Зроблено **вручну**, без майстра: так видно кожен рядок, що потрапив у репо.
+
+- **Закріплена версія з паузою.** `@sentry/nextjs` `11.11.0` — точна версія, без `^`. Новіші версії були молодші за 7
+  днів, а в `.npmrc` демо стоїть `min-release-age=7` ([ланцюг постачання](release-guide.md#ланцюг-постачання)).
+- **Пастка приватності SDK 11.** Опції `sendDefaultPii` в SDK 11 більше немає. Замість неї — `dataCollection`, і за
+  замовчуванням вона **збирає** cookies, заголовки, тіла й query-параметри запитів і поля користувача. У демо все
+  вимкнено в `sentry.server.config.ts`, `sentry.edge.config.ts` і `src/instrumentation-client.ts`:
+
+  ```ts
+  dataCollection: {
+    userInfo: false,
+    cookies: false,
+    httpHeaders: false,
+    httpBodies: [],
+    urlQueryParams: false,
+  },
+  tracesSampleRate: 0, // лише помилки, без трасування
+  ```
+
+  Перевірка через API Sentry на справжній події: заголовків, cookies, query й IP-адреси в ній немає. `genAI` у
+  конфігу демо не задано; якщо у вашому продукті є AI-функція, крок 4 вище
+  (`genAI: { inputs: false, outputs: false }`) — вимога рубрики.
+- **`onRequestError`.** У `src/instrumentation.ts` — `export const onRequestError = Sentry.captureRequestError`, тож
+  кожна необроблена помилка сервера йде в Sentry з маршрутом і методом.
+- **Тестовий маршрут, вимкнений на проді.** `/api/sentry-check` кидає помилку лише поза продом: при
+  `VERCEL_ENV === "production"` він відповідає 404. Шлях додано до `PUBLIC_PATHS` у proxy, щоб запит не переспрямовувало
+  на `/login`; сам preview закритий захистом Vercel. Це варіант «закрийте» з абзацу вище.
+- **DSN спершу лише для Preview.** `NEXT_PUBLIC_SENTRY_DSN` задано у Vercel лише для Preview гілки `ws11/sentry`; без
+  DSN SDK нічого не надсилає (`enabled: Boolean(dsn)`). Значення DSN тут немає і не буде.
+- **Результат.** Issue `LEAVE-PORTAL-DEMO-1`: «Unhandled», `GET /api/sentry-check`, release `1172bf2`, environment
+  `preview`, механізм `auto.function.nextjs.on_request_error`.
+- **Обережно з «Let your agent set up Sentry».** Під час створення проєкту Sentry пропонує вставити агенту промпт:
+  прочитати віддалений файл інструкцій і виконати його з одноразовим кодом передачі (handoff code). Це зручно, але це
+  віддалені інструкції плюс код доступу — той самий ризик ланцюга постачання, що й зі сторонніми skills
+  ([готові skills](skills.md)). Спершу прочитайте файл самі; у демо налаштували вручну.
+
 ## Сходинка 4. Структуровані журнали і `llm.call`
 
 **Структурований журнал** — коли кожна подія пишеться **одним рядком JSON з однаковими полями**, а не фразою.
