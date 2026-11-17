@@ -144,7 +144,8 @@ Instant Rollback стосується лише продакшн-доменів, 
   дивіться саму сторінку Actions.
 - **Для скриптів** у Vercel, GitHub, Sentry і Anthropic є JSON без ключів: `<сторінка>/api/v2/summary.json`. У Supabase
   читайте `https://status.supabase.com/api/v1/summary` (там у кожного компонента інциденту є група й регіон), а не
-  `/api/v2/summary.json`: 17.11.2026 він показував «All Systems Operational» при відкритих інцидентах.
+  `/api/v2/summary.json`: 17.11.2026 він показував «All Systems Operational» при відкритих інцидентах. Але й у
+  `/api/v1/summary` інцидент буває без компонентів (17.11.2026 в `sa-east-1` регіон був лише в тексті) — читайте й текст.
 
 Три правила:
 
