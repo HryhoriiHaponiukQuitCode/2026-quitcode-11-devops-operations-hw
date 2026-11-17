@@ -122,7 +122,7 @@ reviews:
         посилання або «не надходило». Підрозділ «Ланцюг постачання»: «dependabot.yml», «.npmrc», «Дії за SHA» —
         …/blob/<SHA>/…; «Dependabot запускався» — …/pull/N чи …/actions/runs/N (порожньо — ❌: рубрика D не
         зараховує dependabot.yml без жодного запуску); «Push protection і CodeQL» — знімок …/blob/<SHA>/… чи
-        …/actions/runs/N; «next 16.4.5» — …/pull/N.
+        …/actions/runs/N; «next ≥ 16.4.5» — …/pull/N.
         Розділ «Бонус» — рівно «—» або заповнений підрозділ своєї ролі (іншої — «—»). Бонус розробника: «Варіант»
         — «резервна копія і відновлення» або «асистент чергового», поля іншого варіанта — «—»; «Workflow» —
         …/blob/<SHA>/.github/workflows/….yml; «Прогін» — …/actions/runs/N; для копії — шифрування, строк
@@ -245,13 +245,14 @@ reviews:
           16.4.5 or later (16.4.4 or older is a FAIL). "Середовища й реліз": a /tree/staging link, a PR or commit
           bringing main into staging, the branch-only variable name, the smoke workflow file, a green smoke run on
           a staging deployment, the PM access method, a /releases/tag/v1.0.0 link, release notes, matching tag and
-          /api/health SHAs, and the PM acceptance comment. "Сигнали": the alert step line, a red run, a screenshot
+          /api/health SHAs, and the PM acceptance comment or the line "приймання PM не отримано: запит <дата>, <посилання>"
+          (a passive PM is not penalised). "Сигнали": the alert step line, a red run, a screenshot
           file in "Ваше репо", the tracker choice and file, the test-route PR, the llm.call log file and its test
           with a CI run. "Інцидент-дріл": a staging scenario without migrations, signal time and minutes to alert,
           the profile file under .claude/ (settings.json or settings.incident.json are both fine), the transcript
           and postmortem under docs/incidents/, a human fix PR or commit, docs/runbook.md, and a check PR plus CI
           run. "Ланцюг постачання": dependabot.yml, a Dependabot PR or run (missing is a FAIL), .npmrc, a pinned
-          workflow, push protection and CodeQL evidence, and the next 16.4.5 PR.
+          workflow, push protection and CodeQL evidence, and the PR that brings next to 16.4.5 or later.
           "Бонус" is exactly "—" or the participant's role subsection is filled (the other role's subsection is
           "—"). Developer bonus: one variant; workflow and run links; backup: encryption, retention and a restore
           run comparing row counts; assistant: an /issues/N draft, boundaries, limits and cost. An honest partial

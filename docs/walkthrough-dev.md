@@ -11,7 +11,7 @@
 - **C** — інцидент-дріл на staging: зламати → помітити сигналом → розбір агентом у профілі «лише пропонує» →
   виправити → postmortem → runbook → нова перевірка в CI;
 - **D** — ланцюг постачання: Dependabot з паузою, `.npmrc` з `min-release-age`, дії за SHA, push protection і CodeQL,
-  `next` 16.4.5.
+  `next` ≥ 16.4.5.
 
 Бонус (необов'язково) — зашифрована копія бази з тренуванням відновлення або асистент чергового лише на читання.
 
@@ -23,11 +23,10 @@
   покласти, які секрети потрібні й як перевірити. Таблиця «що куди» — у [`materials/README.md`](../materials/README.md).
 - **Гайди:** [середовища, реліз і ланцюг постачання](release-guide.md) · [сигнали](signals-guide.md) ·
   [інцидент](incident-guide.md) · [вартість і ліміти](cost-guide.md). Тут — порядок і що робити тижнем, там — чому і
-  як влаштовано.
-- **Демо як зразок, а не заготовка:** гілка `ws11/operations` у
-  [демо-репо](https://github.com/koldovsky/2026-quitcode-06-leave-portal-demo/tree/ws11/operations): `staging`, smoke
-  кожного деплою, алерт, `llm.call`, профіль «лише пропонує», runbook і postmortem. Runbook і postmortem демо про ваш
-  продукт нічого не доводять.
+  як влаштовано. Факти про тарифи й інтерфейси — станом на 09.11.2026 (джерела — у гайдах).
+- **Демо як зразок, а не заготовка:** гілка `ws11/operations` у демо-репо курсу ([PR #40](https://github.com/koldovsky/2026-quitcode-06-leave-portal-demo/pull/40)): smoke
+  кожного деплою, алерт, `llm.call`, профіль «лише пропонує», runbook; дія з postmortem — [PR #41](https://github.com/koldovsky/2026-quitcode-06-leave-portal-demo/pull/41).
+  Шаблони postmortem і runbook — у `materials/`. Runbook демо про ваш продукт нічого не доводить.
 - D0 і тестові акаунти — [гайд D0 з WS8](https://github.com/koldovsky/2026-quitcode-08-quality-hw/blob/main/docs/deploy-d0.md).
 
 Позначення: `<я>` — ваш GitHub-логін, `<pm>` — логін PM, `<team-slug>` — слаг команди, `<проєкт>` — ім'я вашого
@@ -46,8 +45,8 @@ B=https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operations
 ```
 
 **Бюджет основного треку: 5–7 годин** (кроки 1–6, без бонусу). Бонус — ще ~2–3 год. Дні — як у
-[README, «Тиждень»](../README.md#тиждень): день 0 — заняття ([[DATE:WS11]]), день 6 (понеділок) — здача
-([[DATE:WS11-DEADLINE]]).
+[README, «Тиждень»](../README.md#тиждень): день 0 — заняття (Вт 17.11.2026), день 6 — здача (до кінця
+Пн 23.11.2026).
 
 | Крок | Коли | Бюджет | Трек |
 |---|---|---|---|
@@ -114,15 +113,16 @@ B=https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operations
    - **Code scanning → CodeQL analysis → Set up → Default.**
 
    Знімок цієї сторінки (без чужих даних) — доказ для D.
-6. **`next` 16.4.5 через PR Dependabot.** Після злиття `dependabot.yml` бот відкриває PR (безпекове оновлення може
-   прийти раніше за розклад). Якщо PR немає довше доби — Insights → Dependency graph → Dependabot, перевірте, що бот
+6. **`next` ≥ 16.4.5 через PR Dependabot.** Після злиття `dependabot.yml` бот відкриває PR (безпекове оновлення може
+   прийти раніше за розклад; версійне — у груповому PR `npm-minor-and-patch`, станом на 17.11 уже з 16.4.6 — теж
+   зараховується). Якщо PR немає довше доби — Insights → Dependency graph → Dependabot, перевірте, що бот
    запускався (точну назву перевірте в інтерфейсі), або зробіть власний PR з тим самим оновленням — теж зараховується.
    CI зелений → злиття → smoke проду зелений → `/api/health` показує новий SHA. **PR Dependabot з `supabase` 3.x не
    зливайте:** конфіг набору його ігнорує, але якщо такий PR усе ж прийшов — закрийте з коментарем «тримаємо 2.x до
    demo day» (чому — у [release-guide](release-guide.md#ланцюг-постачання)).
 
 **Доказ (у файл здачі):** PR `chore/supply-chain` з `dependabot.yml`, рядками `.npmrc` і діями за SHA; PR Dependabot (чи
-ваш) з `next` 16.4.5 і зеленим CI; знімок налаштувань push protection і CodeQL або посилання на перший прогін CodeQL;
+ваш) з `next` ≥ 16.4.5 і зеленим CI; знімок налаштувань push protection і CodeQL або посилання на перший прогін CodeQL;
 `/api/health` проду з `"db":"ok"` і SHA `main`; зелений прогін smoke на `main`; `accounts.zip` на SHA і ролі тестових
 акаунтів (лише адреси `*@example.test`); версія `next` з `npm ls next`.
 
@@ -425,8 +425,9 @@ PM і ваша відповідь — або «не надходило».
 Перед здачею — самоперевірка без агента:
 
 ```powershell
-git grep -n -i -E "bot[0-9]{6,}:|sb_secret_|x-vercel-protection-bypass: [A-Za-z0-9]"   # має бути порожньо
-git status --short                                                                      # порожньо
+# має бути порожньо (рядки-заглушки на кшталт sb_secret_... сюди не потрапляють)
+git grep -n -i -E "[0-9]{8,10}:AA[A-Za-z0-9_-]{30,}|sb_secret_[A-Za-z0-9_-]{20,}|x-vercel-protection-bypass: [A-Za-z0-9]{16,}"
+git status --short   # порожньо
 ```
 
 Знайшли значення секрету в історії git — секрет уже публічний: спершу замініть його (новий токен, старий видалити), потім

@@ -81,7 +81,7 @@ SENTRY_AUTH_TOKEN, BACKUP_PASSPHRASE, SUPABASE_DB_URL) — лише назви �
 - Реліз `v1.0.0`: <!-- https://github.com/<я>/<team-slug>/releases/tag/v1.0.0 -->
 - Нотатки за категоріями: <!-- …/blob/<SHA>/.github/release.yml або «власні категорії: …» -->
 - Прод на тегу: <!-- SHA тегу v1.0.0 і SHA у /api/health — мають збігатися -->
-- Приймання PM перед тегом: <!-- коментар PM «Приймання релізу (@<pm>, <дата>): …» …/pull/N#issuecomment-M або …/issues/N#issuecomment-M -->
+- Приймання PM перед тегом: <!-- коментар PM «Приймання релізу (@<pm>, <дата>): …» …/pull/N#issuecomment-M або …/issues/N#issuecomment-M · або «приймання PM не отримано: запит <дата>, <посилання>» -->
 
 ### Сигнали (трек B)
 
@@ -116,7 +116,7 @@ SENTRY_AUTH_TOKEN, BACKUP_PASSPHRASE, SUPABASE_DB_URL) — лише назви �
 - `.npmrc`: <!-- …/blob/<SHA>/.npmrc — з min-release-age -->
 - Дії за SHA: <!-- …/blob/<SHA>/.github/workflows/<…>.yml — uses: …@<повний sha> # v… -->
 - Push protection і CodeQL: <!-- знімок налаштувань …/blob/<SHA>/docs/ops/<…>.png і/або перший прогін CodeQL …/actions/runs/N -->
-- `next` 16.4.5: <!-- PR Dependabot (чи ваш) …/pull/N — злитий, CI зелений -->
+- `next` ≥ 16.4.5: <!-- PR Dependabot (безпековий чи груповий) або ваш …/pull/N — злитий, CI зелений; версія 16.4.5 чи новіша -->
 
 ## Бонус
 

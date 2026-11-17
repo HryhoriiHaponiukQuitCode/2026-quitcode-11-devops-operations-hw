@@ -1,6 +1,6 @@
 // Трекер помилок сервера без Sentry: Next.js викликає onRequestError на кожну необроблену помилку сервера
 // (сторінка, маршрут API, Server Action, proxy), а ми надсилаємо КОРОТКЕ повідомлення в той самий Telegram-чат,
-// що й алерт smoke: маршрут, метод, назва помилки, digest, кілька верхніх рядків стеку, деплой, середовище.
+// що й алерт smoke: маршрут, метод, назва помилки, digest, до 5 верхніх рядків стеку, деплой, середовище.
 // Куди: src/instrumentation.ts у вашому репо (перейменуйте, прибравши .example). Якщо ви обрали Sentry — цей файл
 // НЕ потрібен: майстер `npx @sentry/wizard@latest -i nextjs` створює власний instrumentation.ts з onRequestError.
 // Завдання README: B (трекер помилок сервера: власний onRequestError у instrumentation.ts).
