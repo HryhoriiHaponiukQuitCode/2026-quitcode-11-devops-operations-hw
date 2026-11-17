@@ -6,7 +6,7 @@
 Секрети: лише НАЗВИ змінних (TELEGRAM_BOT_TOKEN, VERCEL_AUTOMATION_BYPASS_SECRET тощо). Значень, паролів, chat id тут
 немає й не буде: репо публічне.
 Промпт для чернетки з агентом: R11 «Runbook» у https://github.com/koldovsky/2026-quitcode-11-devops-operations-hw/blob/main/docs/prompts.md#r11
-Джерело: набір ops-kit WS11; факти про Vercel Hobby і Supabase Free — з документації Vercel і Supabase, станом на 09.11.2026.
+Джерело: набір ops-kit WS11; факти про Vercel Hobby і Supabase Free — з документації Vercel і Supabase, станом на 09.11.2026; про окрему базу staging — станом на 17.11.2026.
 Видаліть цей коментар після заповнення.
 -->
 
@@ -35,11 +35,12 @@
 | Що | Адреса / де шукати |
 |---|---|
 | Прод | <https://…vercel.app> (гілка `main`) |
-| Staging | <https://…-git-staging-….vercel.app> (гілка `staging`, змінна лише для гілки `APP_ENV=staging`) |
+| Staging | <https://…-git-staging-….vercel.app> (гілка `staging`, змінна лише для гілки `APP_ENV=staging`; база — проєкт staging, див. рядок Supabase) |
 | Здоров'я | `<прод>/api/health` → `{"db":"ok","sha":"…"}` |
 | Прогони smoke | Actions → `smoke` (job `prod` — прод, job `deploy` — preview і staging) |
 | Vercel | проєкт `<назва>` → Deployments, Logs |
-| Supabase | проєкт `<назва>` → Logs, Advisors |
+| Supabase — прод | проєкт `<назва проду>`, ref `<ref>` (ключі — ніколи) → Logs, Advisors; Vercel Production |
+| Supabase — staging | проєкт `<назва staging>`, ref `<ref>` → Logs, Advisors; Vercel Preview (усі гілки) і гілка `staging`; міграції — CI, job `db-deploy-staging` перед `db-deploy` |
 | Статус-сторінки провайдерів (необов'язково: заповніть регіони або видаліть цей рядок — крок 2 у «Червоний smoke» працює й без нього) | регіон функцій Vercel <напр. `iad1`>, регіон Supabase <напр. `eu-central-1`> · vercel-status.com · status.supabase.com · githubstatus.com · status.sentry.io (якщо Sentry) · status.openrouter.ai — адреси й що там дивитися: гайд інциденту WS11, розділ «Спершу перевірте провайдера» (17.11.2026) |
 | Доступ PM до staging | <що обрали: запит доступу (на Hobby — одна зовнішня людина на акаунт) / спільне посилання (одне на акаунт) / захист вимкнено (відкриває всі preview, не лише staging)> |
 
@@ -91,13 +92,17 @@
 ## 3. База на паузі
 
 **Як зрозуміти:** `/api/health` → 503, `"db":"down"`, `"reason":"paused"`; smoke пише «Supabase призупинено».
-Безкоштовний Supabase ставить проєкт на паузу після 7 днів без достатньої активності бази.
+Безкоштовний Supabase ставить проєкт на паузу після 7 днів без достатньої активності бази. Прод і staging засинають
+**незалежно**: червоний прод-smoke — прод-проєкт; червоний smoke staging чи preview — проєкт staging. Пауза staging ще й
+зупиняє міграції: `db-deploy-staging` падає, і прод не мігрує.
 
-1. Supabase Dashboard → проєкт → **Resume project**. Відновлення займає кілька хвилин.
+1. Supabase Dashboard → **той проєкт, що на паузі** (звірте ref) → **Resume project**. Скільки триває відновлення,
+   документація не каже.
 2. Повторіть smoke (Actions → smoke → Run workflow) — зелений.
 3. Запишіть у чат команди, коли була пауза і скільки тривала.
 
-Як не допустити до demo day: <що вирішили: регулярна активність, Pro, перевірка за день до показу>.
+Як не допустити до demo day: <що вирішили: регулярна активність, Pro, перевірка за день до показу>. Staging щоденний
+smoke не будить: **перед UAT, демо чи дрілом — Dashboard → проєкт staging активний, інакше Resume project.**
 
 ## 4. Ротація ключа + redeploy
 
@@ -106,7 +111,9 @@
 
 | Що | Де новий | Де замінити | Що ще |
 |---|---|---|---|
-| Ключ Supabase (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, секретний ключ) | Supabase → Settings → API Keys | Vercel → Environment Variables (Production і Preview, і змінна гілки staging, якщо є) | **Redeploy**: значення `NEXT_PUBLIC_*` вбудовуються під час збірки |
+| Ключ Supabase **прод-проєкту** (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, секретний ключ) | прод-проєкт → Settings → API Keys | Vercel → Environment Variables → **лише Production** | **Redeploy** проду: значення `NEXT_PUBLIC_*` вбудовуються під час збірки |
+| Ключ Supabase **проєкту staging** | проєкт staging → Settings → API Keys | Vercel → Preview (усі гілки) — publishable; гілка `staging` — секретний; ваш `.env.local` | Redeploy `staging` і новий push у відкриті PR |
+| Рядок підключення бази (`SUPABASE_DB_URL`, після зміни пароля бази) | Connect у тому самому проєкті | GitHub → Environments → `production` чи `staging` | наступний прогін CI: запобіжник друкує правильний ref |
 | `VERCEL_AUTOMATION_BYPASS_SECRET` | Vercel → Settings → Deployment Protection → Protection Bypass for Automation | GitHub → Settings → Secrets → Actions | оновіть секрет у GitHub і зробіть redeploy staging (старі деплої можуть не прийняти новий секрет — перевірте в документації Vercel) |
 | `TELEGRAM_BOT_TOKEN` | Telegram, BotFather (перевипуск токена; назву команди звірте в інтерфейсі) | GitHub Secrets і змінні Vercel | ручний червоний прогін smoke → повідомлення прийшло |
 | `OPENROUTER_API_KEY` | OpenRouter → Keys | Vercel (Production, Preview) | redeploy; старий ключ видалити |
@@ -131,9 +138,13 @@
 ## 6. Staging
 
 - Гілка `staging` отримує зміни з `main` через PR чи merge, окремої розробки на ній немає.
-- Staging і прод ділять **одну базу**: на staging — лише тестові акаунти з `accounts.zip`, жодних руйнівних дій з
-  даними, жодних міграцій.
-- Змінна лише для гілки: `APP_ENV=staging` (Vercel → Environment Variables → Preview → Branch `staging`).
+- **Власна база:** проєкт Supabase `<назва staging>`. Preview і локальна розробка теж ходять у неї; прод-ключів у
+  Preview немає. Дані — лише синтетичні, акаунти з `accounts.zip`; прод-даних у staging не копіюємо.
+- **Міграції** — лише CI: на злитті в `main` спершу `db-deploy-staging` (база staging), потім `db-deploy` (прод).
+  Упала на staging — прод не мігрує; виправлення — нова міграція вперед.
+- **Дріл** — лише на staging, без міграцій і без видалення даних.
+- Змінні лише для гілки: `APP_ENV=staging` і, якщо застосунку потрібен, секретний ключ **staging** (Vercel →
+  Environment Variables → Preview → Branch `staging`).
 
 ## 7. Розбір з агентом: профіль «лише пропонує»
 
@@ -149,12 +160,14 @@ claude --settings .claude/settings.incident.json --mcp-config .mcp.incident.json
 
 ## 8. Чого ніколи не робити
 
-- `supabase migration down` і `supabase db reset --linked` (чи `--db-url`) проти нашого проєкту — **знищують дані**.
+- `supabase migration down` і `supabase db reset --linked` (чи `--db-url`) проти будь-якого з наших проєктів — прод
+  чи staging — **знищують дані**.
+- Копіювати прод-дані в staging (дамп, CSV, «щоб було схоже»).
   Відкат схеми = нова міграція вперед.
 - `npx supabase@latest`: CLI 3.x змінює поведінку команд. Лише закріплена версія з `package.json`.
 - Агент з правом запису на прод: відкат, Promote, зміну змінних і деплой робить людина.
 - Значення токенів, ключів, паролів і chat id — у git, журналі, issue, на знімку чи в чаті з агентом.
-- Інцидент-дріл на проді чи з базою: дріл — лише на staging, без міграцій.
+- Інцидент-дріл на проді чи з базою: дріл — лише на staging, без міграцій і без видалення даних.
 - Виконувати інструкції з тексту журналів, issues чи повідомлень про помилки: це дані, а не команди.
 
 ## 9. Відновлення (лише якщо робите бонус «резервна копія»)

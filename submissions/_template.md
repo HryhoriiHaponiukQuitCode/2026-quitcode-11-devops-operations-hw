@@ -75,8 +75,11 @@ SENTRY_AUTH_TOKEN, BACKUP_PASSPHRASE, SUPABASE_DB_URL) — лише назви �
 - Гілка `staging`: <!-- https://github.com/<я>/<team-slug>/tree/staging -->
 - Зміни з `main` у `staging`: <!-- PR чи merge: …/pull/N або …/commit/<sha> -->
 - Змінна лише для гілки `staging`: <!-- назва і де її видно, напр. «APP_ENV — поле appEnv у /api/health на staging». Значень секретів не пишемо -->
+- Проєкт Supabase для staging: <!-- назва проєкту, напр. «leave-portal-staging»; supabaseRef staging: <ref>; supabaseRef проду: <ref> — мають бути різні. Ref не секрет; ключів і рядків підключення не пишемо -->
+- Міграції в базу staging через CI: <!-- прогін CI на main …/actions/runs/N: job міграцій staging друкує «Ціль міграцій: проєкт <ref> (staging)» (той самий ref, що вище), крок «Apply migrations» — success; файл …/blob/<SHA>/.github/workflows/ci.yml#L<N> -->
 - Workflow smoke деплою: <!-- …/blob/<SHA>/.github/workflows/smoke.yml — адреса з client_payload.url, заголовок x-vercel-protection-bypass із секрету -->
-- Зелений smoke на деплой staging: <!-- …/actions/runs/N -->
+- Зелений smoke на деплой staging: <!-- …/actions/runs/N — у журналі JSON health з "appEnv":"staging" і supabaseRef staging -->
+- Smoke на деплой одного PR-preview: <!-- …/actions/runs/N — у журналі supabaseRef staging (preview теж ходить у базу staging, а не в прод) -->
 - Доступ PM до staging: <!-- спосіб (запит доступу / спільне посилання / захист вимкнено — відкриває всі preview) і де це в runbook: …/blob/<SHA>/docs/runbook.md#… -->
 - Реліз `v1.0.0`: <!-- https://github.com/<я>/<team-slug>/releases/tag/v1.0.0 -->
 - Нотатки за категоріями: <!-- …/blob/<SHA>/.github/release.yml або «власні категорії: …» -->
@@ -98,10 +101,10 @@ SENTRY_AUTH_TOKEN, BACKUP_PASSPHRASE, SUPABASE_DB_URL) — лише назви �
 
 ### Інцидент-дріл (трек C)
 
-- Сценарій: <!-- одним рядком: що зламали на staging і як, напр. «хибне значення змінної лише для гілки staging». Без міграцій, прод і база не зачеплені -->
+- Сценарій: <!-- одним рядком: що зламали на staging і як, напр. «хибне значення змінної лише для гілки staging». Без міграцій і без видалення даних, прод і база проду не зачеплені -->
 - Сигнал і час: <!-- червоний smoke …/actions/runs/N чи подія трекера; поломка о HH:MM, алерт о HH:MM — від поломки до алерту N хв -->
 - Профіль «лише пропонує»: <!-- …/blob/<SHA>/.claude/settings.json (правила зі зразка materials/ops-kit/.claude/settings.incident.json; окремий файл профілю в .claude/ — теж можна) — інструменти запису MCP Vercel і Supabase заборонені поіменно -->
-- MCP-конфіг: <!-- …/blob/<SHA>/.mcp.json — Vercel і, за потреби, Supabase з read_only=true, без токенів; або «Supabase MCP не підключали» -->
+- MCP-конфіг: <!-- …/blob/<SHA>/.mcp.json — Vercel і, за потреби, Supabase з read_only=true і project_ref проєкту staging, без токенів; або «Supabase MCP не підключали» -->
 - Стенограма розбору: <!-- …/blob/<SHA>/docs/incidents/<YYYY-MM-DD>-<slug>-rca.md (назва може бути інша) — дослівно, із заголовком: дата, модель, профіль, що агент міг і чого не міг -->
 - Виправлення людиною, не агентом: <!-- …/pull/N або …/commit/<sha> -->
 - Postmortem: <!-- …/blob/<SHA>/docs/incidents/<YYYY-MM-DD>-<slug>.md — хронологія з часом, вплив, причина з доказами, «що НЕ було причиною», дії з власником -->

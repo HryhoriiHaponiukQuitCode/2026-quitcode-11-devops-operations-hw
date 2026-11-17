@@ -21,7 +21,7 @@
 | Модель | <як показує /status у Claude Code> |
 | Версія Claude Code | <вивід `claude --version`> |
 | Профіль | `.claude/settings.incident.json` (режим `plan`); запуск: `<команда, якою запускали>` |
-| MCP-сервери | Vercel `https://mcp.vercel.com` (OAuth); Supabase `…?project_ref=<ref>&read_only=true&features=database,debugging,docs` (без токенів) |
+| MCP-сервери | Vercel `https://mcp.vercel.com` (OAuth); Supabase `…?project_ref=<ref проєкту staging>&read_only=true&features=database,debugging,docs` (без токенів) |
 | Що агент **міг** | читати файли репо, `git log/show/diff`, прогони GitHub Actions, деплої й журнали Vercel (`list_deployments`, `get_deployment`, `get_runtime_logs`, `get_runtime_errors`…), журнали й поради Supabase (`get_logs`, `query_logs`, `get_advisors`) |
 | Що агент **не міг** | редагувати файли; відкат, Promote, деплой, зміну змінних Vercel; читати значення змінних (`get_project_env`); міграції й SQL із записом; `git push`; читати `.env*` і `accounts.*` |
 | Що питав у людини | <інструменти з ask, напр. `filter_project_envs`, `execute_sql`: що дозволили, що відхилили> |

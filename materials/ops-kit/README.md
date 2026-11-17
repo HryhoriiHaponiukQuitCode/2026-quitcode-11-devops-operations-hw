@@ -2,8 +2,8 @@
 Що це: README набору розробника WS11 (ops-kit) — що в наборі, куди кожен файл, як підключити, як перевірити.
 Куди: нікуди не копіюється; читайте тут. Файли набору копіюйте за таблицею нижче.
 Завдання README домашки: D0, A, B, C, D і бонус треку розробника.
-Секрети (лише назви): TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, VERCEL_AUTOMATION_BYPASS_SECRET; бонус — BACKUP_PASSPHRASE,
-SUPABASE_DB_URL, ANTHROPIC_API_KEY або CLAUDE_CODE_OAUTH_TOKEN. SENTRY_AUTH_TOKEN — лише у Vercel чи CI, якщо обрали Sentry.
+Секрети (лише назви): TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, VERCEL_AUTOMATION_BYPASS_SECRET; SUPABASE_DB_URL у середовищах
+staging і production (міграції); бонус — BACKUP_PASSPHRASE, ANTHROPIC_API_KEY або CLAUDE_CODE_OAUTH_TOKEN. SENTRY_AUTH_TOKEN — лише у Vercel чи CI, якщо обрали Sentry.
 Джерело: набір ops-kit WS11; факти про сервіси — з їхньої документації, станом на 09.11.2026.
 -->
 
@@ -47,6 +47,7 @@ JSON не дозволяє коментарів, тому заголовки д�
 |---|---|---|---|---|
 | `.github/workflows/smoke.yml` | `.github/workflows/smoke.yml` (замінює файл з D0) | A, B, D | `VERCEL_AUTOMATION_BYPASS_SECRET`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`; змінна репо `PROD_URL` | [R04], [R05] |
 | `scripts/smoke.mjs` | `scripts/smoke.mjs` (замінює файл з D0; команди й коди виходу ті самі) | A | `VERCEL_AUTOMATION_BYPASS_SECRET` (необов'язковий) | [R04] |
+| `ci-examples/db-deploy-staging.yml` | **не копіюється цілком**: фрагменти — у ваш `.github/workflows/ci.yml` (job `db-deploy-staging`, `needs` і запобіжник у `db-deploy`, вхід `include_seed_staging`). Приклад, не запускали | A | секрет середовища `staging`: `SUPABASE_DB_URL`; змінні репо `SUPABASE_STAGING_REF`, `SUPABASE_PROD_REF` | [R03] |
 | `.github/dependabot.yml` | `.github/dependabot.yml` | D | — | [R02] |
 | `npmrc.add` | **дописати** рядки в кінець `.npmrc` у корені (немає — створіть) | D | — | [R02] |
 | `.github/release.yml` | `.github/release.yml` | A | — | [R13] |
@@ -55,7 +56,7 @@ JSON не дозволяє коментарів, тому заголовки д�
 | `tests/llm-log.test.ts` | `tests/llm-log.test.ts` | B | — | [R07] |
 | `src/instrumentation.ts.example` | `src/instrumentation.ts` — **лише без Sentry** | B | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` як змінні **Vercel**; `APP_ENV` (Vercel, лише гілка `staging`) | [R06] |
 | `.claude/settings.incident.json` | правила — у `.claude/settings.json`; файл цілком — `.claude/settings.incident.json` (див. [профіль](#профіль-лише-пропонує-c)) | C | — | [R08] |
-| `mcp.json.example` | сервери — у `.mcp.json`; або файл цілком — `.mcp.incident.json` | C | — (вхід через OAuth); `SUPABASE_PROJECT_REF` — не секрет | [R08] |
+| `mcp.json.example` | сервери — у `.mcp.json`; або файл цілком — `.mcp.incident.json` | C | — (вхід через OAuth); `SUPABASE_PROJECT_REF` — не секрет; для дрілу — ref проєкту **staging** | [R08] |
 | `docs/runbook.template.md` | `docs/runbook.md` | C, бонус | — | [R11] |
 | `docs/incidents/postmortem.template.md` | `docs/incidents/<YYYY-MM-DD>-<slug>.md` | C | — | [R10] |
 | `docs/incidents/rca-transcript.template.md` | `docs/incidents/<YYYY-MM-DD>-<slug>-rca.md` | C | — | [R09] |
@@ -148,7 +149,10 @@ npm test; if ($?) { npm run typecheck }; if ($?) { npm run lint }
    - **Protection Bypass for Automation** — створити секрет; значення — у GitHub Secrets як
      `VERCEL_AUTOMATION_BYPASS_SECRET`. Перегенерували секрет — оновіть його в GitHub і зробіть Redeploy (старі
      деплої можуть не прийняти новий секрет; перевірте в документації Vercel).
-4. **Staging** (промпт [R03]): гілка `staging`, у Vercel — змінна `APP_ENV=staging` лише для гілки `staging`.
+4. **Staging** (промпт [R03]): власний проєкт Supabase, міграції спершу в staging через CI
+   ([`ci-examples/db-deploy-staging.yml`](ci-examples/db-deploy-staging.yml), приклад, не запускали), змінні бази
+   Preview → staging, гілка `staging`, у Vercel — змінна `APP_ENV=staging` лише для гілки `staging`. Порядок і
+   пояснення — [release-guide, «Staging з окремою базою»](../../docs/release-guide.md#staging-з-окремою-базою).
 5. **`.github/release.yml`** — категорії нотаток релізу за мітками PR. Тег `v1.0.0` — після приймання PM.
 
 **Важливо про тригери.** `repository_dispatch`, `status` і `schedule` GitHub запускає лише з файлу на гілці за
@@ -165,7 +169,8 @@ npm test; if ($?) { npm run typecheck }; if ($?) { npm run lint }
 
 - Прод, як у D0: `node scripts/smoke.mjs <прод-URL> <SHA main>` → код 0.
 - Після злиття: push у `staging` → Actions → прогін `smoke` з подією `repository_dispatch`, job `deploy`, зелений.
-  У журналі — `"target": "deploy"` і `"bypass": true`, значення секрету немає.
+  У журналі — `"target": "deploy"`, `"bypass": true` і відповідь health з `supabaseRef` проєкту staging; значення
+  секрету немає.
 - Без секрету job `deploy` пише попередження «Немає секрету VERCEL_AUTOMATION_BYPASS_SECRET». Якщо захист
   увімкнено — job ще й червоний (стіна входу Vercel замість `/api/health`), так і має бути. Якщо захист вимкнено —
   job зелений, але staging відкритий усім: це варто записати в runbook.
@@ -326,7 +331,8 @@ Runtime Logs → рядок `{"event":"llm.call",…}` з токенами й с
 
 - **Vercel:** токенів у файлі немає, вхід — OAuth у `/mcp`. Щоб обмежити одним проєктом, адресу проєкту дає
   `vercel mcp --project` ([гайд інциденту](../../docs/incident-guide.md)).
-- **Supabase** (лише якщо гіпотеза справді про базу): staging і прод ділять базу, тож це підключення до **прод-бази**.
+- **Supabase** (лише якщо гіпотеза справді про базу): для дрілу `project_ref` — проєкт **staging**; прод-база для
+  розбору дрілу не потрібна.
   `read_only=true` — запити від користувача Postgres лише на читання; `features=database,debugging,docs` — без
   інструментів функцій, сховища й гілок. `execute_sql` — в `ask`: ви бачите запит до виконання.
 - **`ask`** — `filter_project_envs` і `execute_sql`: Claude Code спитає вас. У дрілі відповідь «ні» на обидва: назви

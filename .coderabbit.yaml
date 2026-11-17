@@ -5,7 +5,8 @@
 # <pm>/<team-slug>-spec (docs/operations.md with SLOs, SEV1–3, RPO/RTO and alert recipients; release acceptance on
 # every developer's staging signed as comments in the developer repos; review of the developer's postmortem and
 # runbook; docs/incident-message.md, docs/demo-day.md, docs/cost-note.md) and every developer's own implementation
-# repo <dev>/<team-slug> (D0 with next >= 16.4.5; staging branch with a branch-only variable, smoke for every
+# repo <dev>/<team-slug> (D0 with next >= 16.4.5; staging branch with its own Supabase project (supabaseRef differs
+# from prod), a branch-only variable and migrations applied to staging by CI before prod, smoke for every
 # deployment with the Vercel protection bypass, PM access to staging, release v1.0.0; a human alert from a red smoke,
 # an error tracker, an llm.call log without user text plus a test; an incident drill on staging with a propose-only
 # agent transcript, a blameless postmortem, docs/runbook.md and a new CI check; Dependabot with cooldown, .npmrc with
@@ -101,8 +102,13 @@ reviews:
         лише ролі й адреси *@example.test; «Версія next» — 16.4.5 чи новіша (16.4.4 і нижче — ❌: D0 не виконано).
         Підрозділ «Середовища й реліз»: «Гілка staging» — …/tree/staging; «Зміни з main у staging» — …/pull/N чи
         …/commit/<sha>; «Змінна лише для гілки staging» — назва змінної і де її видно (значення секрету — ❌);
-        «Workflow smoke деплою» — …/blob/<SHA>/.github/workflows/….yml; «Зелений smoke на деплой staging» —
-        …/actions/runs/N; «Доступ PM до staging» — спосіб і посилання на runbook;
+        «Проєкт Supabase для staging» — назва проєкту і два ref, staging і прод, і вони різні (однакові чи
+        порожні — ❌: staging ходить у прод-базу; ключ, рядок підключення чи sb_secret_ — ❌, секрет);
+        «Міграції в базу staging через CI» — …/actions/runs/N і рядок ci.yml, ref у журналі збігається з ref
+        staging вище (не збігається чи «вручну з ноутбука» — ❌); «Workflow smoke деплою» —
+        …/blob/<SHA>/.github/workflows/….yml; «Зелений smoke на деплой staging» і «Smoke на деплой одного
+        PR-preview» — …/actions/runs/N кожен (немає preview — ⚠️: не видно, що preview не ходять у прод);
+        «Доступ PM до staging» — спосіб і посилання на runbook;
         «Реліз v1.0.0» — …/releases/tag/v1.0.0 у «Ваше репо» (інший тег — ⚠️); «Нотатки за категоріями» —
         …/blob/<SHA>/.github/release.yml або опис власних; «Прод на тегу» — SHA тегу й SHA з /api/health, і вони
         збігаються (різні — ⚠️); «Приймання PM перед тегом» — посилання на коментар (немає — ⚠️, не ❌: пасивність
@@ -112,7 +118,8 @@ reviews:
         алерт» — канал і ролі (chat id — ❌); «Трекер помилок» — Sentry чи власний onRequestError і посилання на
         файл; «Дані моделі в трекері» — заповнено; «Тестовий маршрут прибрано чи закрито» — …/pull/N; «Журнал
         llm.call» і «Тест «без тексту користувача»» — …/blob/<SHA>/… і …/actions/runs/N. Підрозділ «Інцидент-дріл»:
-        «Сценарій» — на staging, без міграцій (дріл на проді чи з міграцією — ❌); «Сигнал і час» — прогін чи
+        «Сценарій» — на staging, без міграцій і без видалення даних (дріл на проді, з міграцією чи з видаленням
+        даних — ❌); «Сигнал і час» — прогін чи
         подія і хвилини від поломки до алерту (без часу — ⚠️); «Профіль «лише пропонує»» —
         …/blob/<SHA>/.claude/settings.json або інший файл профілю в .claude/ (наприклад settings.incident.json з
         набору) — обидва варіанти нормальні; «MCP-конфіг» — …/blob/<SHA>/.mcp.json або «Supabase MCP не
@@ -243,12 +250,16 @@ reviews:
           For dev: the D0 block has an https://…/api/health link on the Прод-URL host, an /actions/runs/N link for
           smoke, a /blob/<SHA>/accounts.zip link, roles with *@example.test addresses only, and a next version of
           16.4.5 or later (16.4.4 or older is a FAIL). "Середовища й реліз": a /tree/staging link, a PR or commit
-          bringing main into staging, the branch-only variable name, the smoke workflow file, a green smoke run on
-          a staging deployment, the PM access method, a /releases/tag/v1.0.0 link, release notes, matching tag and
+          bringing main into staging, the branch-only variable name, the staging Supabase project name with two
+          supabaseRef values (staging and prod) that are filled and different (equal or empty is a FAIL; any key,
+          connection string or sb_secret_ value is a FAIL), a CI run link plus a ci.yml line for the staging
+          migration job whose printed ref matches the staging ref (missing or "manual from a laptop" is a FAIL),
+          the smoke workflow file, a green smoke run on a staging deployment and a smoke run on one PR preview
+          (missing preview run is a WARNING), the PM access method, a /releases/tag/v1.0.0 link, release notes, matching tag and
           /api/health SHAs, and the PM acceptance comment or the line "приймання PM не отримано: запит <дата>, <посилання>"
           (a passive PM is not penalised). "Сигнали": the alert step line, a red run, a screenshot
           file in "Ваше репо", the tracker choice and file, the test-route PR, the llm.call log file and its test
-          with a CI run. "Інцидент-дріл": a staging scenario without migrations, signal time and minutes to alert,
+          with a CI run. "Інцидент-дріл": a staging scenario without migrations or data deletion, signal time and minutes to alert,
           the profile file under .claude/ (settings.json or settings.incident.json are both fine), the transcript
           and postmortem under docs/incidents/, a human fix PR or commit, docs/runbook.md, and a check PR plus CI
           run. "Ланцюг постачання": dependabot.yml, a Dependabot PR or run (missing is a FAIL), .npmrc, a pinned

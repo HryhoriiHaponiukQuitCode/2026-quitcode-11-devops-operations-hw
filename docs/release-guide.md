@@ -272,7 +272,7 @@ applies to every Environment that the variable covers» ([Vercel CLI: env](https
 
 1. Відкрийте наявний запис → лишіть галочку **лише Production** → Save. Значення — прод, без змін.
 2. **Add new** → та сама назва → лише **Preview**, усі гілки (без вибору конкретної) → значення staging. Для
-   `SUPABASE_SECRET_KEY` замість цього: Preview → **гілка `staging`** → ключ staging.
+   `SUPABASE_SECRET_KEY` замість цього: Preview → **гілка `staging`** (коли гілка `staging` уже є) → ключ staging.
 3. Development: значення staging або без галочки.
 4. Перевірка: жодне значення **не-Production** (Preview і Development) не вказує на прод-проєкт. За бажанням —
    `vercel env ls` (лише назви й середовища; значення не друкуйте).
