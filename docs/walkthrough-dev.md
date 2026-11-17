@@ -99,7 +99,7 @@ B=https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operations
 
    | Область аудиту R01 | Крок цієї домашки | Промпт |
    |---|---|---|
-   | 1. CI/CD | 1.4 (дії за SHA, назви jobs без змін); ворота й ruleset — з WS8 | R02 |
+   | 1. CI/CD | 1.4 (дії за SHA, назви jobs без змін); ворота й ruleset `solo-main` — як були | R02 |
    | 2. Середовища, змінні й секрети | 2.1, 2.5 (staging, `APP_ENV`) | R03 |
    | 3. Реліз і відкат | 5 (тег `v1.0.0`); відкат і Promote — у runbook, 4.11; прапорці — необов'язково | R13, R11, R19 |
    | 4. Health і smoke | 2.1, 2.2 (`appEnv`, smoke кожного деплою) | R03, R04 |
