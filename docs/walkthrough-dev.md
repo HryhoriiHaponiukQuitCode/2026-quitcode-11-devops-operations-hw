@@ -30,7 +30,10 @@ staging**. Цього тижня продукт стає **експлуатов�
   (джерела — у гайдах).
 - **Демо як зразок, а не заготовка:** гілка `ws11/operations` у демо-репо курсу ([PR #40](https://github.com/koldovsky/2026-quitcode-06-leave-portal-demo/pull/40)): smoke
   кожного деплою, алерт, `llm.call`, профіль «лише пропонує», runbook; дія з postmortem — [PR #41](https://github.com/koldovsky/2026-quitcode-06-leave-portal-demo/pull/41).
-  Шаблони postmortem і runbook — у `materials/`. Runbook демо про ваш продукт нічого не доводить.
+  Шаблони postmortem і runbook — у `materials/`. Runbook демо про ваш продукт нічого не доводить. **Runbook демо ще
+  описує staging на прод-базі — це застаріло;** середовища й паузу Supabase пишіть за
+  [release-guide, «Staging з окремою базою»](release-guide.md#staging-з-окремою-базою) і
+  [шаблоном runbook](../materials/ops-kit/docs/runbook.template.md): два проєкти, прод і staging, кожен зі своєю паузою.
 - D0 і тестові акаунти — [гайд D0 з WS8](https://github.com/koldovsky/2026-quitcode-08-quality-hw/blob/main/docs/deploy-d0.md).
 
 Позначення: `<я>` — ваш GitHub-логін, `<pm>` — логін PM, `<team-slug>` — слаг команди, `<проєкт>` — ім'я вашого
