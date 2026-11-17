@@ -82,6 +82,7 @@ jobs:
     steps:
       # У режимі link ref береться із секрету SUPABASE_PROJECT_ID: GitHub маскує значення секретів у журналі всюди,
       # тож ref там був би «***». Тому в цьому режимі журнал каже лише «ref збігається з SUPABASE_PROD_REF».
+      # Якщо секрет SUPABASE_PROJECT_ID у production є, ref може бути замаскований і в режимі db-url — це нормально.
       - name: Guard - production database ref
         if: steps.mode.outputs.mode != 'skip'
         run: |
