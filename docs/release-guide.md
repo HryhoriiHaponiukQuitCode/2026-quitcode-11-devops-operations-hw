@@ -232,7 +232,8 @@ environment** із запобіжником ref, а не ноутбук, — з�
 6. **`vercel env pull` перепише `.env.local`.** Ця команда «will export development environment variables to a local
    `.env.local` file» ([Vercel CLI: env](https://vercel.com/docs/cli/env), станом на 17.11.2026). Тож у Vercel у
    середовищі **Development** мають бути значення staging або нічого (крок 7), інакше одна команда тихо поверне
-   локальну розробку на прод.
+   локальну розробку на прод. Секретного ключа в Development немає, тож після `vercel env pull` перевірте, що
+   `SUPABASE_SECRET_KEY` staging у `.env.local` є (його потребують `users:demo` і UAT), і за потреби допишіть.
 
 ### 6. Auth у проєкті staging
 
@@ -273,7 +274,7 @@ applies to every Environment that the variable covers» ([Vercel CLI: env](https
 1. Відкрийте наявний запис → лишіть галочку **лише Production** → Save. Значення — прод, без змін.
 2. **Add new** → та сама назва → лише **Preview**, усі гілки (без вибору конкретної) → значення staging. Для
    `SUPABASE_SECRET_KEY` замість цього: Preview → **гілка `staging`** (коли гілка `staging` уже є) → ключ staging.
-3. Development: значення staging або без галочки.
+3. Development: значення staging або без галочки; `SUPABASE_SECRET_KEY` — без галочки в Development.
 4. Перевірка: жодне значення **не-Production** (Preview і Development) не вказує на прод-проєкт. За бажанням —
    `vercel env ls` (лише назви й середовища; значення не друкуйте).
 
