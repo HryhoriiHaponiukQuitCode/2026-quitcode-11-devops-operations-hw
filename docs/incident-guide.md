@@ -200,7 +200,7 @@ Smoke відкриває `/`, `/login` і `/api/health`. Значить, пол�
 | Варіант | Як зламати | Який сигнал спрацює | Як зупинити шкоду |
 |---|---|---|---|
 | **A. Хибна змінна для гілки** | Vercel → Settings → Environment Variables → Preview, гілка `staging`: перевизначте `NEXT_PUBLIC_SUPABASE_URL` чи `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` хибним значенням → **Redeploy** staging (змінні `NEXT_PUBLIC_` вбудовуються під час збірки) | smoke деплою staging: `/api/health` → 503 (`invalid-api-key`, `status-0` чи інший `status-…`) → червоний прогін → Telegram | видалити **лише це** хибне перевизначення (інші змінні гілки `staging` лишаються) → staging знову бере загальне значення Preview, тобто базу staging → Redeploy → smoke зелений |
-| **B. Коміт, що ламає сторінку** | дріл-PR **у `staging`** (не в `main`), що кидає помилку при рендері `/login` | smoke деплою staging (`/login` ≠ 200) → Telegram; подія в трекері помилок, коли відкриєте сторінку | revert-PR у `staging` → новий деплой → smoke зелений |
+| **B. Коміт, що ламає сторінку** | дріл-PR **у `staging`** (не в `main`), що кидає помилку при рендері `/login` | smoke деплою staging (`/login` ≠ 200) → Telegram; подія в трекері помилок, коли відкриєте сторінку | revert-PR у `staging` → новий деплой → smoke зелений. Після дрілу в `staging` лишаються коміти дрілу, яких немає в `main`, тож `git merge --ff-only` (крок 2.13 walkthrough) відмовить: далі оновлюйте `staging` з `main` лише через PR `main → staging`. Або обирайте варіант A |
 | **C. Змінна, якої «немає»** | код на staging вимагає змінну (наприклад, `APP_ENV`), а для гілки її не задано чи задано порожньою | залежить від коду: якщо health її не перевіряє — **жоден** (і це вже знахідка для postmortem) | задати змінну → Redeploy |
 
 Що **не** годиться для дрілу: міграція, видалення даних, зміна налаштувань Supabase, поломка на проді, вимкнення
@@ -235,7 +235,9 @@ Smoke відкриває `/`, `/login` і `/api/health`. Значить, пол�
 | **Supabase MCP** (лише за потреби) | `claude mcp add --scope project --transport http supabase "https://mcp.supabase.com/mcp?project_ref=<ref>&read_only=true&features=database,debugging,docs"` | журнали (`query_logs` / `get_logs`, вікно до 24 год), `get_advisors`, читання схеми | для дрілу `<ref>` — проєкт **staging**: розбору на staging доступ до прод-бази не потрібен. `project_ref` обмежує одним проєктом, `read_only=true` — запити від користувача Postgres лише на читання, `apply_migration` у цьому режимі відмовляє |
 
 Зразок без токенів — `materials/ops-kit/mcp.json.example`. Supabase підключайте, лише якщо гіпотеза справді про базу:
-для дрілу зі змінною середовища він зазвичай не потрібен, а якщо потрібен — з `project_ref` проєкту staging. Supabase
+для дрілу зі змінною середовища він зазвичай не потрібен, а якщо потрібен — з `project_ref` проєкту staging. Шаблонний
+`.mcp.json` бере ref зі змінної оболонки `SUPABASE_PROJECT_REF`, а там з WS6 зазвичай ref проду: перед сесією дрілу
+задайте в ній ref staging (або впишіть його прямо в `.mcp.incident.json`) і в `/mcp` звірте проєкт. Supabase
 сам радить під'єднуватися до проду, лише коли для задачі потрібні докази з проду.
 
 ### Профіль: дозволи на читання, заборона запису поіменно

@@ -63,8 +63,8 @@ Supabase.** Проєкт Supabase, міграції й змінні бази —
    Новий домен спершу прив'язується до гілки за замовчуванням, тому його треба відредагувати.
 3. **Змінна лише для гілки.** Settings → Environment Variables → нова змінна, середовище **Preview**, гілка
    **`staging`**. Наприклад, `APP_ENV=staging`. Така змінна перекриває однойменну змінну Preview лише для цієї гілки.
-   З терміналу (Vercel CLI ≥ 64.7.0): `vercel env add APP_ENV --environment preview --git-branch staging`
-   ([Vercel CLI: env](https://vercel.com/docs/cli/env)).
+   З терміналу (Vercel CLI ≥ 64.6.0, станом на 17.11.2026): `vercel env add APP_ENV --environment preview --git-branch
+   staging` ([Vercel CLI: env](https://vercel.com/docs/cli/env)).
 4. **Передеплой.** Змінні застосовуються **лише до нових деплоїв**
    ([Vercel: Environment Variables](https://vercel.com/docs/environment-variables)). Після зміни змінної зробіть
    новий push у `staging` чи Redeploy.
@@ -162,9 +162,11 @@ Preview перемикаємо **до** першого деплою гілки `
 
 Робите **до** злиття PR з job міграцій staging (крок 4), у вебінтерфейсі GitHub:
 
-1. Settings → Environments → **New environment** `staging` → Deployment branches: **Selected branches** → `main`. Так,
-   саме `main`: міграції в обидві бази запускає лише конвеєр на `main`; PR-гілки й гілка `staging` секрету бази staging
-   не отримають.
+1. Settings → Environments → **New environment** `staging` → Deployment branches: **Selected branches and tags** →
+   правило для гілки `main` (так цей пункт називає
+   [GitHub: Managing environments](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments),
+   станом на 17.11.2026; точну назву перевірте в інтерфейсі). Так, саме `main`: міграції в обидві бази запускає лише
+   конвеєр на `main`; PR-гілки й гілка `staging` секрету бази staging не отримають.
 2. У environment `staging` — секрет **`SUPABASE_DB_URL`** = рядок Session pooler проєкту staging (крок 2). Секрети
    environment бачать лише jobs, що на нього посилаються: «These secrets are only available to workflow jobs that use
    the environment» ([GitHub: Managing environments](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments)).
@@ -203,8 +205,11 @@ Actions → CI → Run workflow (гілка `main`, `include_seed_staging` = tru
 кнопки перевірте в інтерфейсі).
 
 **Еквіваленти в оцінюванні.** Зараховуємо будь-який шлях, де міграції в базу staging застосовує **CI з секрету
-environment** із запобіжником ref, а не ноутбук, — зокрема тригер на push у гілку `staging`, як у прикладі Supabase.
-Тоді в runbook запишіть пастку: PR-preview між злиттям і оновленням `staging` працюватимуть на старій схемі.
+environment** із запобіжником ref, а не ноутбук, — зокрема тригер на push у гілку `staging` (у прикладі Supabase така
+гілка зветься `develop`, [Supabase: Managing environments](https://supabase.com/docs/guides/deployment/managing-environments),
+станом на 17.11.2026). Тоді в environment `staging` (крок 3.1) дозвольте гілку `staging` замість `main`, інакше GitHub
+не пустить job у середовище. І в runbook запишіть пастку: PR-preview між злиттям і оновленням `staging` працюватимуть
+на старій схемі.
 
 ### 5. Тестові акаунти, локальна розробка й дані для UAT
 
@@ -229,11 +234,14 @@ environment** із запобіжником ref, а не ноутбук, — з�
    (станом на 17.11.2026; у шаблоні курсу цього заголовка немає — доручіть агенту через [R03](prompts.md#r03)).
    Те, що справді має йти в прод (наприклад, `users:demo` для проду), запускайте явно з окремим файлом:
    `node --env-file=.env.prod.local scripts/create-demo-users.mjs`. `.env.local` туди-сюди не перемикайте.
-6. **`vercel env pull` перепише `.env.local`.** Ця команда «will export development environment variables to a local
-   `.env.local` file» ([Vercel CLI: env](https://vercel.com/docs/cli/env), станом на 17.11.2026). Тож у Vercel у
-   середовищі **Development** мають бути значення staging або нічого (крок 7), інакше одна команда тихо поверне
-   локальну розробку на прод. Секретного ключа в Development немає, тож після `vercel env pull` перевірте, що
-   `SUPABASE_SECRET_KEY` staging у `.env.local` є (його потребують `users:demo` і UAT), і за потреби допишіть.
+6. **`vercel env pull` бере значення з Development.** Ця команда «will export development environment variables to a
+   local `.env.local` file», а якщо файл уже є — зливає: змінні, яких немає в Development (зокрема `SUPABASE_SECRET_KEY`
+   і `DEMO_USER_PASSWORD`), лишаються, а ті, що є в Development, перезаписуються
+   ([Vercel CLI: env](https://vercel.com/docs/cli/env), станом на 17.11.2026). Тож у Vercel у середовищі
+   **Development** мають бути значення staging або нічого (крок 7): інакше одна команда тихо поверне
+   `NEXT_PUBLIC_SUPABASE_*` на прод, а секретний ключ у файлі лишиться від staging — локальна розробка змішає
+   прод-адресу з ключем staging. Після `vercel env pull` звірте, що `NEXT_PUBLIC_SUPABASE_URL` у `.env.local` веде на
+   ref staging.
 
 ### 6. Auth у проєкті staging
 
@@ -267,9 +275,10 @@ Production»: без ключа staging адмінські функції на s
 галочкою Preview на прод-ключі віддало б прод-ключ кожному PR-preview.
 
 **Як розділити змінну, не зламавши прод.** У WS6 кожна змінна — один запис з кількома галочками (Production, Preview,
-можливо Development). Якщо просто змінити значення, воно зміниться **в усіх** позначених середовищах: «The new value
-applies to every Environment that the variable covers» ([Vercel CLI: env](https://vercel.com/docs/cli/env)). Тому для
-кожної змінної з таблиці:
+можливо Development). Якщо просто змінити значення, воно зміниться **в усіх** позначених середовищах. Для команди
+`vercel env update` Vercel пише прямо: «The new value applies to every Environment that the variable covers»
+([Vercel CLI: env](https://vercel.com/docs/cli/env), станом на 17.11.2026); у Dashboard це той самий запис з кількома
+галочками. Тому для кожної змінної з таблиці:
 
 1. Відкрийте наявний запис → лишіть галочку **лише Production** → Save. Значення — прод, без змін.
 2. **Add new** → та сама назва → лише **Preview**, усі гілки (без вибору конкретної) → значення staging. Для
@@ -377,8 +386,8 @@ Staging будять локальна розробка, PR-preview і smoke ко
 **Чому це потрібно і з окремою базою.** У кожен момент існує код, старіший за схему: прод під час збірки Vercel, прод
 після Instant Rollback і staging між злиттям у `main` і оновленням гілки `staging`. Тому кожна міграція має бути
 сумісна з кодом, що зараз на проді і на staging. PR-preview працюють на схемі бази staging (= схема `main`): якщо PR
-містить і міграцію, і код, що її використовує, preview буде червоним до злиття міграції — живий приклад, навіщо
-міграція йде окремим PR першою.
+містить і міграцію, і код, що її використовує, preview може впасти на сторінках, що вже читають нову схему, аж до
+злиття міграції — живий приклад, навіщо міграція йде окремим PR першою.
 
 Промпт для перевірки міграції — у [R01 «Аудит готовності до експлуатації»](prompts.md#r01): агент лише читає й
 каже, чи сумісна міграція з кодом у `main` і чи її треба розбити.
@@ -647,8 +656,8 @@ PM.
 - **Staging на Hobby** = гілка `staging` + адреса гілки + змінна лише для гілки (`APP_ENV=staging`), видна в
   `/api/health` чи на сторінці. Custom Environments — це Pro.
 - **Staging має власну базу Supabase:** preview, staging і локальна розробка — на ній, прод — лише на прод-базі;
-  міграції CI застосовує спершу в staging, потім у прод (із запобіжником ref); прод-даних у staging немає; дріл — без
-  міграцій. Зміна схеми — expand/contract.
+  міграції CI застосовує спершу в staging, потім у прод (із запобіжником ref); прод-даних у staging немає; дріл — лише
+  staging, без міграцій і без видалення даних. Зміна схеми — expand/contract.
 - **Спершу міграція окремим PR, потім код.** Відкат коду ніколи не повертає схему.
 - **Smoke кожного деплою** — за адресою деплою з `client_payload.url` і заголовком `x-vercel-protection-bypass`;
   секрет — лише в GitHub Secrets.

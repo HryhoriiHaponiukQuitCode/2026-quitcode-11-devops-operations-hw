@@ -16,7 +16,11 @@
 - **Додатково, без балів:** [як викотити функцію й нічого не зламати: прапорці, канарка, blue-green, аварійний
   вимикач](docs/release-strategies.md) · [готові agent skills і як їх безпечно встановлювати](docs/skills.md) ·
   [задачі за розкладом: агент, який сам переглядає експлуатацію](docs/scheduled-tasks.md)
-- **Гайди WS8, які діють без змін:** [D0 і тестові акаунти](https://github.com/koldovsky/2026-quitcode-08-quality-hw/blob/main/docs/deploy-d0.md) ·
+- **Гайди WS8, які діють без змін, з одним винятком:**
+  [D0 і тестові акаунти](https://github.com/koldovsky/2026-quitcode-08-quality-hw/blob/main/docs/deploy-d0.md)
+  (крім `npm run users:demo`: тепер `.env.local` = staging, тож акаунти на проді створюйте чи оновлюйте явно —
+  `node --env-file=.env.prod.local scripts/create-demo-users.mjs`, див.
+  [release-guide, крок 5](docs/release-guide.md#5-тестові-акаунти-локальна-розробка-й-дані-для-uat)) ·
   [ворота](https://github.com/koldovsky/2026-quitcode-08-quality-hw/blob/main/docs/gates-guide.md)
 
 Домашка одинадцятого воркшопу курсу **«Modern Development with Agentic AI»**.

@@ -181,8 +181,8 @@ staging, за адресою саме цього деплою. Як влашто
    Redirect URLs — `https://*-<scope>.vercel.app/**` і `http://localhost:3000/**`.
 2. **GitHub: environment `staging`, секрет і змінні з ref** —
    [крок 3](release-guide.md#3-github-environment-staging-секрет-і-змінні-з-ref). New environment `staging`, Deployment
-   branches = `main`; секрет `SUPABASE_DB_URL` = рядок staging; Repository variables `SUPABASE_STAGING_REF` і
-   `SUPABASE_PROD_REF`. `SUPABASE_DB_URL` — не серед Repository secrets.
+   branches: **Selected branches and tags** → правило для гілки `main`; секрет `SUPABASE_DB_URL` = рядок staging;
+   Repository variables `SUPABASE_STAGING_REF` і `SUPABASE_PROD_REF`. `SUPABASE_DB_URL` — не серед Repository secrets.
 3. **`/api/health` показує середовище й базу, CI мігрує спершу staging** — промпт
    [R03 «Staging: гілка, власна база, змінна для гілки, доступ PM»](prompts.md#r03). У health два нові поля: `appEnv`
    (з вашої змінної `APP_ENV`: на staging `VERCEL_ENV` теж `preview`) і `supabaseRef` (ref проєкту з
@@ -241,7 +241,8 @@ staging, за адресою саме цього деплою. Як влашто
    ```
 
 9. **Змінні лише для гілки** — Vercel → Settings → Environment Variables → нова змінна `APP_ENV` = `staging`,
-   середовище **лише Preview**, гілка **`staging`** (назви полів перевірте в інтерфейсі). Або з Vercel CLI ≥ 64.7.0:
+   середовище **лише Preview**, гілка **`staging`** (назви полів перевірте в інтерфейсі). Або з Vercel CLI ≥ 64.6.0
+   (станом на 17.11.2026, [Vercel CLI: env](https://vercel.com/docs/cli/env)):
    `vercel env add APP_ENV --environment preview --git-branch staging` (значення CLI спитає). Якщо застосунок читає
    `SUPABASE_SECRET_KEY` — так само лише Preview, гілка `staging`, значення — секретний ключ **staging**. Змінні діють **лише на нові деплої**: якщо деплой `staging`
    уже зібрався без них — Deployments → останній деплой `staging` → Redeploy.
@@ -372,9 +373,11 @@ staging, за адресою саме цього деплою. Як влашто
 
    Далі в Claude Code — `/mcp` → вхід. Звірте назви інструментів у `/mcp` з `deny` у `.claude/settings.json` (набір
    інструментів сервера змінюється, а префікс `mcp__vercel__` — це ім'я, яке ви дали серверу). Перевірка профілю:
-   попросіть агента показати значення будь-якої змінної середовища — має бути відмова. Supabase MCP (`read_only=true`,
-   `project_ref`) у шаблоні вже є; для дрілу зі змінною середовища він зазвичай не потрібен. Якщо підключаєте — лише
-   з `project_ref` **проєкту staging**.
+   попросіть агента показати значення будь-якої змінної середовища — має бути відмова. Supabase MCP (`read_only=true`)
+   у шаблоні вже є, але ref він бере зі змінної оболонки `SUPABASE_PROJECT_REF`, а там з WS6 зазвичай **ref проду**.
+   Для дрілу зі змінною середовища Supabase MCP зазвичай не потрібен. Якщо підключаєте — перед запуском сесії дрілу
+   задайте `SUPABASE_PROJECT_REF` = ref **staging** (або впишіть ref staging прямо в `.mcp.incident.json`: ref не
+   секрет) і в `/mcp` звірте, що сервер дивиться в проєкт staging.
 3. **Норма:** останній прогін smoke на `staging` — зелений. Відкрийте issue «Інцидент-дріл: <коротко>» і запишіть
    **до поломки**: що зламаєте, який сигнал має спрацювати і через скільки. Інцидент, знайдений очима, рубрика не
    зараховує.
