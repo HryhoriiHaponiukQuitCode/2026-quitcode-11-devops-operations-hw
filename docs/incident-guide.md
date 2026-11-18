@@ -78,7 +78,7 @@ postmortem доведеться відновлювати з пам'яті.
 
 1. **Сигнал.** Червоний smoke, повідомлення в Telegram, подія в трекері. Запишіть час.
 2. **Зберегти докази — у першу годину.** Журнали Vercel на Hobby живуть 1 годину, Supabase Free — 1 добу. Відкрийте
-   issue «Інцидент: <коротко>» і скопіюйте туди: посилання на червоний прогін, id чи адресу деплою, відповідь
+   issue «Інцидент: <коротко>» і скопіюйте туди: посилання на червоний прогін, id (identifier — ідентифікатор) чи адресу деплою, відповідь
    `/api/health`, рядки журналу з помилкою (без даних користувачів і секретів), коміт. Те, що не скопійовано, через
    годину не існує.
 3. **Зупинити шкоду — до розбору причин.** Користувачам байдуже, чому не працює, — їм важливо, щоб запрацювало.
@@ -138,7 +138,7 @@ Instant Rollback стосується лише продакшн-доменів, 
 | Vercel | <https://www.vercel-status.com> | Settings → Functions → Function Regions (за замовчуванням `iad1`, Вашингтон; на Hobby — один регіон). Заголовок відповіді `x-vercel-id` теж показує регіон, де виконалась функція | `Functions`, компонент регіону ваших функцій (напр. `IAD1 - Washington DC, USA`), `Builds`; шукайте код регіону й у **назві** інциденту — Vercel часто пише регіон лише там | email, SMS (Short Message Service — повідомлення на телефон), webhook, Slack, RSS/Atom (RSS — Really Simple Syndication; RSS і Atom — стрічки оновлень для програми-читалки) |
 | Supabase | <https://status.supabase.com> | Dashboard → головна сторінка проєкту (у демо курсу 17.11.2026 там видно `eu-central-1`, Франкфурт) | групи `Postgres`, `Data APIs`, `Connection Pooler` для **свого** регіону, а також `Auth`, `Dashboard`; `eu-central-2` — це Цюрих, інший регіон | email, Slack, RSS/Atom (SMS вимкнено) |
 | GitHub | <https://www.githubstatus.com> | регіонів для github.com немає | `Actions` (smoke і CI), `Git Operations`, `Pull Requests`, `Webhooks` (через них Vercel дізнається про push) | email, SMS, webhook, Slack, RSS/Atom |
-| Sentry (якщо обрали) | <https://status.sentry.io> | регіон даних організації — US (США) чи EU (Європейський Союз, Франкфурт); обирається під час створення організації, змінити не можна; видно в налаштуваннях організації ([Sentry](https://docs.sentry.io/organization/data-storage-location/)) | компоненти свого регіону, напр. `EU Error Ingestion`, `EU Errors Alerting`; `Notification Delivery → Email` (алерти безкоштовного плану — лише e-mail) | email, SMS, webhook, Slack, RSS/Atom |
+| Sentry (якщо обрали) | <https://status.sentry.io> | регіон даних організації — US (United States — США) чи EU (European Union — Європейський Союз; Франкфурт); обирається під час створення організації, змінити не можна; видно в налаштуваннях організації ([Sentry](https://docs.sentry.io/organization/data-storage-location/)) | компоненти свого регіону, напр. `EU Error Ingestion`, `EU Errors Alerting`; `Notification Delivery → Email` (алерти безкоштовного плану — лише e-mail) | email, SMS, webhook, Slack, RSS/Atom |
 | OpenRouter | <https://status.openrouter.ai> | регіону немає | записи на сторінці **і тіло помилки API** (Application Programming Interface — програмний інтерфейс сервісу): 429 (Too Many Requests — забагато запитів) із заголовками `X-RateLimit-*` — ваш власний ліміт (напр. безкоштовних моделей), `error.metadata.provider_code` — обмежує постачальник моделі; цього на сторінці може й не бути | RSS `https://status.openrouter.ai/history.rss` (інших способів не перевіряли) |
 | Anthropic (ваш агент) | <https://status.claude.com> | — | `Claude Code`, `Claude API (api.anthropic.com)`; `claude.ai` — це лише чат | email, SMS, webhook, Slack, Microsoft Teams, RSS/Atom |
 
@@ -232,7 +232,7 @@ Smoke відкриває `/`, `/login` і `/api/health`. Значить, пол�
 
 ### Що підключаємо
 
-Інструменти сервісів агент отримує через MCP (Model Context Protocol — спосіб дати агенту інструменти чужого
+Інструменти сервісів агент отримує через MCP (Model Context Protocol — спосіб дати агенту інструменти зовнішнього
 сервісу, наприклад Vercel чи Supabase):
 
 | Сервер MCP | Як підключити | Що агенту там корисно | Чим небезпечний |
@@ -242,7 +242,7 @@ Smoke відкриває `/`, `/login` і `/api/health`. Значить, пол�
 
 Зразок без токенів — `materials/ops-kit/mcp.json.example`. Supabase підключайте, лише якщо гіпотеза справді про базу:
 для дрілу зі змінною середовища він зазвичай не потрібен, а якщо потрібен — з `project_ref` проєкту staging. Шаблонний
-`.mcp.json` бере ref (reference — короткий ідентифікатор проєкту Supabase з його адреси, не секрет) зі змінної оболонки `SUPABASE_PROJECT_REF`, а там з WS6 зазвичай ref проду: перед сесією дрілу
+`.mcp.json` бере ref (reference — короткий ідентифікатор проєкту Supabase з його адреси, не секрет) зі змінної оболонки `SUPABASE_PROJECT_REF`, а там з WS6 (WS — workshop, заняття курсу) зазвичай ref проду: перед сесією дрілу
 задайте в ній ref staging (або впишіть його прямо в `.mcp.incident.json`) і в `/mcp` звірте проєкт. Supabase
 сам радить під'єднуватися до проду, лише коли для задачі потрібні докази з проду.
 

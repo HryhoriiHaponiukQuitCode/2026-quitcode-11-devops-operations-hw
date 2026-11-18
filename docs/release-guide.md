@@ -81,7 +81,7 @@ Supabase.** Проєкт Supabase, міграції й змінні бази —
 Що **не** зараховується як staging: просто preview з PR; змінна, однакова для всіх середовищ; окрема розробка в
 `staging` повз `main`; staging чи preview, що ходить у прод-базу.
 
-**Ключ OpenRouter на staging.** Якщо у WS10 ви додали `OPENROUTER_API_KEY` у Preview, staging його успадкує. Тоді
+**Ключ OpenRouter на staging.** Якщо у WS10 (WS — workshop, заняття курсу) ви додали `OPENROUTER_API_KEY` у Preview, staging його успадкує. Тоді
 staging витрачає ті самі 50 безкоштовних запитів на добу, що й прод і ваш eval (evaluation — автоматична перевірка
 відповідей моделі): додаткові ключі ліміт не збільшують. Плануйте UAT (User Acceptance Testing — приймальне
 тестування) PM на staging і живий eval на різні UTC-доби (UTC, Coordinated Universal Time — всесвітній час; Київ =

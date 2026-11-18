@@ -10,7 +10,7 @@
 [сигнали й алерт](signals-guide.md) · [покроково для PM](walkthrough-pm.md) (PM — project manager, менеджер проєкту) ·
 [шаблон записки про вартість](../materials/pm-kit/cost-note.template.md) ·
 [шаблон чекліста demo day](../materials/pm-kit/demo-day.template.md) ·
-[промпти R14, R16](prompts.md#r14) · [моделі OpenRouter (WS10)](https://github.com/koldovsky/2026-quitcode-10-ai-features-hw/blob/main/docs/models.md).
+[промпти R14, R16](prompts.md#r14) · [моделі OpenRouter (WS10; WS — workshop, заняття курсу)](https://github.com/koldovsky/2026-quitcode-10-ai-features-hw/blob/main/docs/models.md).
 
 **Усі цифри — станом на 09.11.2026**, з офіційних сторінок тарифів (посилання в таблицях). Тарифи змінюються: у
 записці клієнту завжди пишіть дату «станом на» і перед відправкою звірте цифри за посиланням.
@@ -50,7 +50,7 @@ AI-функції (AI, artificial intelligence — штучний інтелек
 | Журнали API (Application Programming Interface — програмний інтерфейс сервісу; тут: запити застосунку до Supabase) й бази | **1 день** | [Pricing](https://supabase.com/pricing) |
 | Розмір бази | 500 МБ на проєкт; диск 2 ГБ, при 95 % заповнення база переходить у режим лише читання | [Database size](https://supabase.com/docs/guides/platform/database-size) |
 | Трафік, користувачі, файли | 5 ГБ вихідного трафіку, 50 000 активних користувачів на місяць, 1 ГБ файлів | [Pricing](https://supabase.com/pricing) |
-| **Вхід паролем** (`/token`) | **150 запитів за 5 хв з однієї IP-адреси (IP — Internet Protocol; адреса пристрою в мережі), сплеск до 30**; оновлення сесій ідуть у той самий ліміт | [Auth rate limits](https://supabase.com/docs/guides/auth/rate-limits) |
+| **Вхід паролем** (`/token`) | **150 запитів за 5 хв з однієї IP-адреси (IP — Internet Protocol, тут: адреса пристрою чи мережі), сплеск до 30**; оновлення сесій ідуть у той самий ліміт | [Auth rate limits](https://supabase.com/docs/guides/auth/rate-limits) |
 | Реєстрація, відновлення пароля, OTP (one-time password — одноразовий код), magic link | 30 запитів за 5 хв з однієї IP-адреси | там само |
 | Листи вбудованою поштою | **2 листи на годину** | там само |
 | Branching (окрема база на гілку) | Free — «Not included»; Pro і вище — $0.01344 за гілку на годину. Тому staging у курсі — окремий безкоштовний проєкт | [Pricing](https://supabase.com/pricing), станом на 17.11.2026 |

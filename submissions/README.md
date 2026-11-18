@@ -16,7 +16,7 @@ README, ні `docs/`, ні `materials/`, ні чужих файлів у `submis
 
 ## Яке репо й SHA вказати
 
-Кожен здає **своє** репо — те саме, що у WS6–WS10:
+Кожен здає **своє** репо — те саме, що у WS6–WS10 (WS — workshop, заняття курсу):
 
 | Роль | «Ваше репо» | «Репо вимог PM» |
 |---|---|---|
@@ -54,7 +54,7 @@ staging будь-кому і живе лише в GitHub Secrets.
 | PR | ваше репо | `https://github.com/<ваш-логін>/<repo>/pull/N` |
 | Файл на SHA (`smoke.yml`, `dependabot.yml`, `.npmrc`, `runbook.md`, postmortem, стенограма, `accounts.zip`) | ваше репо | `https://github.com/<ваш-логін>/<repo>/blob/<SHA>/docs/incidents/<YYYY-MM-DD>-<slug>.md` |
 | Рядок файлу (крок алерту) | ваше репо | `…/blob/<SHA>/.github/workflows/smoke.yml#L<N>` |
-| Знімок (алерт, подія трекера, налаштування безпеки) | ваше репо | `…/blob/<SHA>/docs/ops/<що-на-знімку>.png` — токен, chat id і секрети замазано |
+| Знімок (алерт, подія трекера, налаштування безпеки) | ваше репо | `…/blob/<SHA>/docs/ops/<що-на-знімку>.png` — токен, chat id (id — identifier, ідентифікатор чату) і секрети замазано |
 | Прогін CI (`smoke`, `CI`, CodeQL, Dependabot, бонусний workflow) | ваше репо | `https://github.com/<ваш-логін>/<repo>/actions/runs/N` |
 | Гілка `staging` | ваше репо | `https://github.com/<ваш-логін>/<repo>/tree/staging` |
 | Реліз `v1.0.0` | ваше репо | `https://github.com/<ваш-логін>/<repo>/releases/tag/v1.0.0` |

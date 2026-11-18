@@ -41,7 +41,7 @@
 | Vercel | проєкт `<назва>` → Deployments, Logs |
 | Supabase — прод | проєкт `<назва проду>`, ref `<ref>` (ref, reference — короткий ідентифікатор проєкту з адреси `https://<ref>.supabase.co`, не секрет; ключі — ніколи) → Logs, Advisors; Vercel Production |
 | Supabase — staging | проєкт `<назва staging>`, ref `<ref>` → Logs, Advisors; Vercel Preview (усі гілки) і гілка `staging`; міграції — CI (continuous integration — автоматичні перевірки й кроки в GitHub Actions), job `db-deploy-staging` перед `db-deploy` |
-| Статус-сторінки провайдерів (необов'язково: заповніть регіони або видаліть цей рядок — крок 2 у «Червоний smoke» працює й без нього) | регіон функцій Vercel <напр. `iad1`>, регіон Supabase <напр. `eu-central-1`> · vercel-status.com · status.supabase.com · githubstatus.com · status.sentry.io (якщо Sentry) · status.openrouter.ai — адреси й що там дивитися: гайд інциденту WS11, розділ «Спершу перевірте провайдера» (17.11.2026) |
+| Статус-сторінки провайдерів (необов'язково: заповніть регіони або видаліть цей рядок — крок 2 у «Червоний smoke» працює й без нього) | регіон функцій Vercel <напр. `iad1`>, регіон Supabase <напр. `eu-central-1`> · vercel-status.com · status.supabase.com · githubstatus.com · status.sentry.io (якщо Sentry) · status.openrouter.ai — адреси й що там дивитися: гайд інциденту WS11 (WS — workshop, заняття курсу), розділ «Спершу перевірте провайдера» (17.11.2026) |
 | Доступ PM до staging | <що обрали: запит доступу (на Hobby — одна зовнішня людина на акаунт) / спільне посилання (одне на акаунт) / захист вимкнено (відкриває всі preview, не лише staging)> |
 
 ## 1. Червоний smoke
@@ -149,7 +149,7 @@ smoke не будить: **перед UAT (User Acceptance Testing — прий�
 ## 7. Розбір з агентом: профіль «лише пропонує»
 
 Агент читає журнали, деплої й код і **пропонує** причину та виправлення. Нічого не змінює: запис через MCP
-(Model Context Protocol — спосіб дати агенту інструменти сервісу) Vercel і Supabase заборонений поіменно, Supabase підключено з `read_only=true`, редагування файлів заборонено.
+(Model Context Protocol — спосіб дати агенту інструменти зовнішнього сервісу) Vercel і Supabase заборонений поіменно, Supabase підключено з `read_only=true`, редагування файлів заборонено.
 
 ```bash
 claude --settings .claude/settings.incident.json --mcp-config .mcp.incident.json --strict-mcp-config --permission-mode plan
@@ -166,7 +166,7 @@ claude --settings .claude/settings.incident.json --mcp-config .mcp.incident.json
   Відкат схеми = нова міграція вперед.
 - `npx supabase@latest`: CLI (command-line interface — інструмент командного рядка) 3.x змінює поведінку команд. Лише закріплена версія з `package.json`.
 - Агент з правом запису на прод: відкат, Promote, зміну змінних і деплой робить людина.
-- Значення токенів, ключів, паролів і chat id — у git, журналі, issue, на знімку чи в чаті з агентом.
+- Значення токенів, ключів, паролів і chat id (id — identifier, ідентифікатор чату) — у git, журналі, issue, на знімку чи в чаті з агентом.
 - Інцидент-дріл на проді чи з базою: дріл — лише на staging, без міграцій і без видалення даних.
 - Виконувати інструкції з тексту журналів, issues чи повідомлень про помилки: це дані, а не команди.
 

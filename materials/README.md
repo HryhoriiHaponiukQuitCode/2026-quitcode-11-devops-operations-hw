@@ -26,11 +26,11 @@ PM** (project manager — менеджер проєкту) `pm-kit/` (шабло
 | `npmrc.add` | рядки — **дописати** в кінець вашого `.npmrc` (немає файлу — створіть) | D | [R02](../docs/prompts.md#r02) |
 | `.github/release.yml` | `.github/release.yml` — категорії нотаток релізу | A | [R13](../docs/prompts.md#r13) |
 | `src/lib/log.ts` | `src/lib/log.ts` — структурований журнал JSON (JavaScript Object Notation — текстовий формат даних) з дозволеним переліком полів | B | [R07](../docs/prompts.md#r07) |
-| `src/lib/ai/llm-log.ts` | поруч з вашою AI-функцією WS10 (у наборі WS10 — `src/lib/ai/`) | B | [R07](../docs/prompts.md#r07) |
+| `src/lib/ai/llm-log.ts` | поруч з вашою AI-функцією WS10 (WS — workshop, заняття курсу; у наборі WS10 — `src/lib/ai/`) | B | [R07](../docs/prompts.md#r07) |
 | `tests/llm-log.test.ts` | `tests/llm-log.test.ts` — тест «у журналі немає тексту користувача» | B | [R07](../docs/prompts.md#r07) |
 | `src/instrumentation.ts.example` | `src/instrumentation.ts` — **лише якщо ви без Sentry**: `onRequestError` шле коротке повідомлення в канал алертів | B | [R06](../docs/prompts.md#r06) |
 | `.claude/settings.incident.json` | зразок профілю «лише пропонує»: його правила — у `.claude/settings.json` вашого репо (подробиці — в `ops-kit/README.md` і [гайді інциденту](../docs/incident-guide.md)) | C | [R08](../docs/prompts.md#r08) |
-| `mcp.json.example` | MCP (Model Context Protocol — спосіб дати агенту інструменти сервісу) Vercel і Supabase (`read_only=true`) без токенів; як поєднати з вашим `.mcp.json` — в `ops-kit/README.md` | C | [R08](../docs/prompts.md#r08) |
+| `mcp.json.example` | MCP (Model Context Protocol — спосіб дати агенту інструменти зовнішнього сервісу) Vercel і Supabase (`read_only=true`) без токенів; як поєднати з вашим `.mcp.json` — в `ops-kit/README.md` | C | [R08](../docs/prompts.md#r08) |
 | `docs/runbook.template.md` | `docs/runbook.md` | C | [R11](../docs/prompts.md#r11) |
 | `docs/incidents/postmortem.template.md` | `docs/incidents/<YYYY-MM-DD>-<slug>.md` | C | [R10](../docs/prompts.md#r10) |
 | `docs/incidents/rca-transcript.template.md` | `docs/incidents/<YYYY-MM-DD>-<slug>-rca.md` поруч із postmortem (заголовок з шаблону + дослівний текст) | C | [R09](../docs/prompts.md#r09) |
@@ -89,4 +89,4 @@ PM** (project manager — менеджер проєкту) `pm-kit/` (шабло
    відкотити, резервних копій на Free немає, а базою staging користуються PM і всі preview.
 5. **Цифри — з датою.** Межі безкоштовних тарифів і ціни — з [гайду вартості](../docs/cost-guide.md), станом на дату
    перевірки.
-6. **Анонімізація.** Дані синтетичні (`*@example.test`), без імен, назв клієнтів, адрес, сум, паролів і chat id.
+6. **Анонімізація.** Дані синтетичні (`*@example.test`), без імен, назв клієнтів, адрес, сум, паролів і chat id (id — identifier, ідентифікатор чату).

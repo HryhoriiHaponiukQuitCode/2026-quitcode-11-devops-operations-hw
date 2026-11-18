@@ -35,7 +35,7 @@ staging і production (міграції); бонус — BACKUP_PASSPHRASE, ANTH
 | **cooldown** (пауза для нових версій) | Dependabot не пропонує версію пакета, молодшу за N днів | не їсти пиріг, поки не охолов: шкідливі версії зазвичай знаходять у перші дні |
 | **закріплення за SHA** (SHA — Secure Hash Algorithm; тут: 40-символьний ідентифікатор коміту) | `uses: дія@<40 символів коміту> # vX.Y.Z` замість `@v4` | номер конкретної партії ліків замість «щось від голови» |
 | **структурований журнал** | один рядок JSON (JavaScript Object Notation — текстовий формат даних) на подію з дозволеним переліком полів | бланк з графами замість вільного листа: зайве просто нікуди вписати |
-| **MCP** (Model Context Protocol) | спосіб дати агенту інструменти чужого сервісу (Vercel, Supabase) | пульт від чужого телевізора: важливо, які кнопки на ньому працюють |
+| **MCP** (Model Context Protocol) | спосіб дати агенту інструменти зовнішнього сервісу (Vercel, Supabase) | пульт від чужого телевізора: важливо, які кнопки на ньому працюють |
 | **allow / ask / deny** | правила Claude Code: виконувати без питань / спитати вас / заборонити завжди | ключ від архіву, дзвінок охороні, замуровані двері |
 | **runbook** | інструкція «що робити, коли…», написана заздалегідь | план евакуації на стіні |
 | **postmortem без пошуку винних** (blameless) | розбір інциденту: що сталося, чому, що змінимо — без «хто винен» | розбір польоту в авіації: шукають причину, а не цапа-відбувайла |
@@ -54,11 +54,11 @@ JSON не дозволяє коментарів, тому заголовки д�
 | `npmrc.add` | **дописати** рядки в кінець `.npmrc` у корені (немає — створіть) | D | — | [R02] |
 | `.github/release.yml` | `.github/release.yml` | A | — | [R13] |
 | `src/lib/log.ts` | `src/lib/log.ts` | B | — | [R07] |
-| `src/lib/ai/llm-log.ts` | `src/lib/ai/llm-log.ts` (поруч з AI-функцією WS10; AI — artificial intelligence, штучний інтелект) | B | — | [R07] |
+| `src/lib/ai/llm-log.ts` | `src/lib/ai/llm-log.ts` (поруч з AI-функцією WS10; AI — artificial intelligence, штучний інтелект; WS — workshop, заняття курсу) | B | — | [R07] |
 | `tests/llm-log.test.ts` | `tests/llm-log.test.ts` | B | — | [R07] |
 | `src/instrumentation.ts.example` | `src/instrumentation.ts` — **лише без Sentry** | B | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` як змінні **Vercel**; `APP_ENV` (Vercel, лише гілка `staging`) | [R06] |
 | `.claude/settings.incident.json` | правила — у `.claude/settings.json`; файл цілком — `.claude/settings.incident.json` (див. [профіль](#профіль-лише-пропонує-c)) | C | — | [R08] |
-| `mcp.json.example` | сервери — у `.mcp.json`; або файл цілком — `.mcp.incident.json` | C | — (вхід через OAuth — Open Authorization: вхід на сайті сервісу, без токена у файлі); `SUPABASE_PROJECT_REF` — не секрет; для дрілу — ref (reference — короткий ідентифікатор проєкту Supabase з його адреси) проєкту **staging** | [R08] |
+| `mcp.json.example` | сервери — у `.mcp.json`; або файл цілком — `.mcp.incident.json` | C | — (OAuth — Open Authorization, вхід через ваш акаунт сервісу в браузері; без токена у файлі); `SUPABASE_PROJECT_REF` — не секрет; для дрілу — ref (reference — короткий ідентифікатор проєкту Supabase з його адреси) проєкту **staging** | [R08] |
 | `docs/runbook.template.md` | `docs/runbook.md` | C, бонус | — | [R11] |
 | `docs/incidents/postmortem.template.md` | `docs/incidents/<YYYY-MM-DD>-<slug>.md` | C | — | [R10] |
 | `docs/incidents/rca-transcript.template.md` | `docs/incidents/<YYYY-MM-DD>-<slug>-rca.md` | C | — | [R09] |
@@ -191,7 +191,7 @@ npm test; if ($?) { npm run typecheck }; if ($?) { npm run lint }
 
 1. Створіть бота через @BotFather (назву команди звірте в самому BotFather) → токен у GitHub Secrets як
    `TELEGRAM_BOT_TOKEN`.
-2. Додайте бота в чат команди, де є люди; id чату дізнайтеся методом `getUpdates` з документації Telegram Bot API (Application Programming
+2. Додайте бота в чат команди, де є люди; id (identifier — ідентифікатор) чату дізнайтеся методом `getUpdates` з документації Telegram Bot API (Application Programming
    Interface — програмний інтерфейс сервісу) →
    у GitHub Secrets як `TELEGRAM_CHAT_ID`. Значення ніде не записуйте.
 3. Крок алерту `if: failure()` передає значення лише через `env:`, без `set -x`. Немає секретів — крок пропускається

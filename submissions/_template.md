@@ -18,8 +18,8 @@ SENTRY_AUTH_TOKEN, BACKUP_PASSPHRASE, SUPABASE_DB_URL) — лише назви �
 - Команда: <!-- property-workflows | therapy-scheduling | school-purchasing | leave-portal -->
 - GitHub-логін: <!-- як у назві файлу -->
 - Ваше репо: <!-- PM: https://github.com/<ваш-логін>/<team-slug>-spec · розробник: https://github.com/<ваш-логін>/<team-slug> -->
-- SHA: <!-- 40 hex-символів (hexadecimal — шістнадцяткові: 0–9, a–f), останній коміт main ВАШОГО репо на момент здачі. Розробник: git fetch origin → git rev-parse origin/main. PM: сторінка комітів main → кнопка копіювання повного SHA -->
-- Репо вимог PM: <!-- https://github.com/<pm>/<team-slug>-spec (PM — те саме, що «Ваше репо») -->
+- SHA: <!-- SHA (Secure Hash Algorithm — тут: 40-символьний ідентифікатор коміту): 40 hex-символів (hexadecimal — шістнадцяткові: 0–9, a–f), останній коміт main ВАШОГО репо на момент здачі. Розробник: git fetch origin → git rev-parse origin/main. PM: сторінка комітів main → кнопка копіювання повного SHA -->
+- Репо вимог PM: <!-- https://github.com/<pm>/<team-slug>-spec · PM (project manager — менеджер проєкту): те саме, що «Ваше репо» -->
 - Прод-URL: <!-- URL (Uniform Resource Locator) — адреса. Розробник: https://<проєкт>.vercel.app (той самий, що першим рядком README) · PM: «—» -->
 - Staging-URL: <!-- розробник: домен гілки staging у Vercel, https://….vercel.app — без параметрів після «?» · PM: «—» -->
 
@@ -80,7 +80,7 @@ SENTRY_AUTH_TOKEN, BACKUP_PASSPHRASE, SUPABASE_DB_URL) — лише назви �
 - Міграції в базу staging через CI: <!-- CI — continuous integration, автоматичні перевірки й кроки в GitHub Actions. Прогін CI на main …/actions/runs/N: job міграцій staging друкує «Ціль міграцій: проєкт <ref> (staging)» (той самий ref, що вище), крок «Apply migrations» — success; файл …/blob/<SHA>/.github/workflows/ci.yml#L<N> -->
 - Workflow smoke деплою: <!-- …/blob/<SHA>/.github/workflows/smoke.yml — адреса з client_payload.url, заголовок x-vercel-protection-bypass із секрету -->
 - Зелений smoke на деплой staging: <!-- …/actions/runs/N — у журналі JSON (JavaScript Object Notation — текстовий формат даних) health з "appEnv":"staging" і supabaseRef staging -->
-- Smoke на деплой одного PR-preview: <!-- …/actions/runs/N — у журналі supabaseRef staging (preview теж ходить у базу staging, а не в прод) -->
+- Smoke на деплой одного PR-preview: <!-- PR — pull request, запит на злиття змін; …/actions/runs/N — у журналі supabaseRef staging (preview теж ходить у базу staging, а не в прод) -->
 - Доступ PM до staging: <!-- спосіб (запит доступу / спільне посилання / захист вимкнено — відкриває всі preview) і де це в runbook: …/blob/<SHA>/docs/runbook.md#… -->
 - Реліз `v1.0.0`: <!-- https://github.com/<я>/<team-slug>/releases/tag/v1.0.0 -->
 - Нотатки за категоріями: <!-- …/blob/<SHA>/.github/release.yml або «власні категорії: …» -->
@@ -104,8 +104,8 @@ SENTRY_AUTH_TOKEN, BACKUP_PASSPHRASE, SUPABASE_DB_URL) — лише назви �
 
 - Сценарій: <!-- одним рядком: що зламали на staging і як, напр. «хибне значення змінної лише для гілки staging». Без міграцій і без видалення даних, прод і база проду не зачеплені -->
 - Сигнал і час: <!-- червоний smoke …/actions/runs/N чи подія трекера; поломка о HH:MM, алерт о HH:MM — від поломки до алерту N хв -->
-- Профіль «лише пропонує»: <!-- …/blob/<SHA>/.claude/settings.json (правила зі зразка materials/ops-kit/.claude/settings.incident.json; окремий файл профілю в .claude/ — теж можна) — інструменти запису MCP (Model Context Protocol — спосіб дати агенту інструменти сервісу) Vercel і Supabase заборонені поіменно -->
-- MCP-конфіг: <!-- …/blob/<SHA>/.mcp.json — Vercel і, за потреби, Supabase з read_only=true і project_ref проєкту staging, без токенів; або «Supabase MCP не підключали» -->
+- Профіль «лише пропонує»: <!-- …/blob/<SHA>/.claude/settings.json (правила зі зразка materials/ops-kit/.claude/settings.incident.json; окремий файл профілю в .claude/ — теж можна) — інструменти запису MCP (Model Context Protocol — спосіб дати агенту інструменти зовнішнього сервісу) Vercel і Supabase заборонені поіменно -->
+- MCP-конфіг: <!-- MCP (Model Context Protocol — спосіб дати агенту інструменти зовнішнього сервісу): …/blob/<SHA>/.mcp.json — Vercel і, за потреби, Supabase з read_only=true і project_ref проєкту staging, без токенів; або «Supabase MCP не підключали» -->
 - Стенограма розбору: <!-- …/blob/<SHA>/docs/incidents/<YYYY-MM-DD>-<slug>-rca.md (назва може бути інша) — дослівно, із заголовком: дата, модель, профіль, що агент міг і чого не міг -->
 - Виправлення людиною, не агентом: <!-- …/pull/N або …/commit/<sha> -->
 - Postmortem: <!-- …/blob/<SHA>/docs/incidents/<YYYY-MM-DD>-<slug>.md — хронологія з часом, вплив, причина з доказами, «що НЕ було причиною», дії з власником -->

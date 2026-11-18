@@ -1,6 +1,6 @@
 # Бібліотека промптів WS11: що дати агенту й що перевірити
 
-Промпти, якими у WS11 отримуємо результат від агента: розробник — у Claude Code, PM (project manager — менеджер
+Промпти, якими у WS11 (WS — workshop, заняття курсу) отримуємо результат від агента: розробник — у Claude Code, PM (project manager — менеджер
 проєкту) — в AI-чаті (AI, artificial intelligence — штучний інтелект). На слайдах воркшопу промпти позначено
 ID (identifier — ідентифікатор): R01 … R18; R19–R21 — додаткові, необов'язкові, без балів. Тут — повний текст кожного, коли
 його давати і що перевірити в результаті. Тексти R01–R18 тут і на слайдах однакові.
@@ -52,10 +52,10 @@ ID (identifier — ідентифікатор): R01 … R18; R19–R21 — до�
 
 ## Покажчик
 
-Скорочення в покажчику й у текстах промптів: CI/CD (Continuous Integration / Continuous Delivery — безперервна
+Скорочення в покажчику й у текстах промптів: dev (developer — розробник; у назві R01), CI/CD (Continuous Integration / Continuous Delivery — безперервна
 інтеграція і доставка; CI — автоматичні перевірки кожної зміни), SHA (Secure Hash Algorithm — тут: 40-символьний
 ідентифікатор коміту), JSON (JavaScript Object Notation — текстовий формат даних), CLI (command-line interface —
-інструмент командного рядка), API (Application Programming Interface — програмний інтерфейс сервісу), env
+інструмент командного рядка), stderr (standard error — потік повідомлень програми про помилки), API (Application Programming Interface — програмний інтерфейс сервісу), env
 (environment — середовище; env-файл — файл зі змінними середовища), e2e (end-to-end — перевірка сценарію від початку
 до кінця, як користувач), OAuth (Open Authorization — вхід через ваш акаунт сервісу в браузері), IP (Internet
 Protocol — тут: адреса пристрою чи мережі), UTC (Coordinated Universal Time — всесвітній час; Київ = UTC+2 взимку), URL (Uniform Resource Locator — адреса
