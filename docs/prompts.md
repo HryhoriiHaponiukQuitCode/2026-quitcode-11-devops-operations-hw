@@ -52,7 +52,8 @@ ID (identifier — ідентифікатор): R01 … R18; R19–R21 — до�
 
 ## Покажчик
 
-Скорочення в покажчику й у текстах промптів: dev (developer — розробник; у назві R01), CI/CD (Continuous Integration / Continuous Delivery — безперервна
+Скорочення в покажчику й у текстах промптів: wd / wp (walkthrough-dev / walkthrough-pm — покрокова інструкція домашки
+розробника / PM; число після позначки — крок, напр. «wd 2»), dev (developer — розробник; у назві R01), CI/CD (Continuous Integration / Continuous Delivery — безперервна
 інтеграція і доставка; CI — автоматичні перевірки кожної зміни), SHA (Secure Hash Algorithm — тут: 40-символьний
 ідентифікатор коміту), JSON (JavaScript Object Notation — текстовий формат даних), CLI (command-line interface —
 інструмент командного рядка), stderr (standard error — потік повідомлень програми про помилки), API (Application Programming Interface — програмний інтерфейс сервісу), env

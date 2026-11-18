@@ -1,5 +1,7 @@
 # Здача WS11
 
+Скорочення: WS (workshop — заняття курсу), PM (project manager — менеджер проєкту), SHA (Secure Hash Algorithm — тут: 40-символьний ідентифікатор коміту), URL (Uniform Resource Locator — адреса), SLO (Service Level Objective — ціль рівня сервісу), RPO/RTO (Recovery Point / Recovery Time Objective — скільки даних можна втратити і скільки продукт може не працювати), UAT (User Acceptance Testing — приймальне тестування), CI (continuous integration — автоматичні перевірки кожної зміни), PR (pull request — запит на злиття змін), MCP (Model Context Protocol — спосіб дати агенту інструменти зовнішнього сервісу).
+
 <!--
 Скопіюйте цей файл у submissions/<team-slug>/<github-login>.md і заповніть УСІ поля.
 Ім'я та прізвище сюди НЕ пишіть — лише в опис PR, pull request — запиту на злиття змін (репозиторій публічний).

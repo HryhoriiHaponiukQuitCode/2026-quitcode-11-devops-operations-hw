@@ -16,7 +16,7 @@
 ## Що агент робить тут
 
 - Допомагає учаснику **заповнити файл здачі** `submissions/<team-slug>/<github-login>.md` за
-  `submissions/_template.md` (поля WS11 — у шаблоні): роль `pm` або `dev`; SHA (Secure Hash Algorithm; тут — ідентифікатор коміту) — повні 40 символів `main`
+  `submissions/_template.md` (поля WS11 — у шаблоні): роль `pm` або `dev`; SHA (Secure Hash Algorithm — тут: 40-символьний ідентифікатор коміту) — повні 40 символів `main`
   «Вашого репо»; посилання — повні `https://github.com/…`; адреси prod і staging — без параметрів після «?»; розділ
   іншої ролі — «—».
 - Пояснює кроки з `docs/walkthrough-dev.md`, `docs/walkthrough-pm.md`, `docs/prompts.md` (бібліотека промптів

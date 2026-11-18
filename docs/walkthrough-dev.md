@@ -184,7 +184,7 @@ staging, за адресою саме цього деплою. Як влашто
    `<team-slug>-staging` у тому самому регіоні, налаштування Data API (API, Application Programming Interface —
    програмний інтерфейс сервісу) як у проді. Забрати в менеджер паролів: адресу,
    publishable і secret key, рядок Session pooler (порт 5432) — **цілком з проєкту staging**, не правлячи прод-рядок.
-   Одразу ж **Auth staging, частина 1** ([крок 6](release-guide.md#6-auth-у-проєкті-staging)): налаштування як у проді;
+   Одразу ж **Auth (authentication — вхід і перевірка користувача) staging, частина 1** ([крок 6](release-guide.md#6-auth-у-проєкті-staging)): налаштування як у проді;
    Redirect URLs (URL — Uniform Resource Locator, адреса; тут — дозволені адреси повернення після входу) —
    `https://*-<scope>.vercel.app/**` і `http://localhost:3000/**`.
 2. **GitHub: environment `staging`, секрет і змінні з ref** (ref, reference — короткий ідентифікатор проєкту Supabase з його адреси, не секрет) —
