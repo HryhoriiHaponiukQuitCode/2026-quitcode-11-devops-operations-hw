@@ -2,10 +2,10 @@
 
 <!--
 Скопіюйте цей файл у submissions/<team-slug>/<github-login>.md і заповніть УСІ поля.
-Ім'я та прізвище сюди НЕ пишіть — лише в опис PR (репозиторій публічний).
+Ім'я та прізвище сюди НЕ пишіть — лише в опис PR, pull request — запиту на злиття змін (репозиторій публічний).
 Поле або розділ, що не стосується вашої ролі, — рівно «—». Коментарі-підказки після заповнення можна видалити.
-Посилання — повні: https://github.com/… або https://….vercel.app. Файли — на SHA (…/blob/<SHA>/…).
-PM здає репо вимог <pm>/<team-slug>-spec, розробник — своє репо <dev>/<team-slug>.
+Посилання — повні: https://github.com/… або https://….vercel.app. Файли — на SHA (Secure Hash Algorithm — тут: 40-символьний ідентифікатор коміту): …/blob/<SHA>/….
+PM (project manager — менеджер проєкту) здає репо вимог <pm>/<team-slug>-spec, розробник — своє репо <dev>/<team-slug>.
 Жодних паролів: акаунти — лише адреси *@example.test. Пароль від accounts.zip теж не пишемо.
 Жодних значень токенів, ключів і chat id (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, VERCEL_AUTOMATION_BYPASS_SECRET,
 SENTRY_AUTH_TOKEN, BACKUP_PASSPHRASE, SUPABASE_DB_URL) — лише назви змінних.
@@ -18,9 +18,9 @@ SENTRY_AUTH_TOKEN, BACKUP_PASSPHRASE, SUPABASE_DB_URL) — лише назви �
 - Команда: <!-- property-workflows | therapy-scheduling | school-purchasing | leave-portal -->
 - GitHub-логін: <!-- як у назві файлу -->
 - Ваше репо: <!-- PM: https://github.com/<ваш-логін>/<team-slug>-spec · розробник: https://github.com/<ваш-логін>/<team-slug> -->
-- SHA: <!-- 40 hex, останній коміт main ВАШОГО репо на момент здачі. Розробник: git fetch origin → git rev-parse origin/main. PM: сторінка комітів main → кнопка копіювання повного SHA -->
+- SHA: <!-- 40 hex-символів (hexadecimal — шістнадцяткові: 0–9, a–f), останній коміт main ВАШОГО репо на момент здачі. Розробник: git fetch origin → git rev-parse origin/main. PM: сторінка комітів main → кнопка копіювання повного SHA -->
 - Репо вимог PM: <!-- https://github.com/<pm>/<team-slug>-spec (PM — те саме, що «Ваше репо») -->
-- Прод-URL: <!-- розробник: https://<проєкт>.vercel.app (той самий, що першим рядком README) · PM: «—» -->
+- Прод-URL: <!-- URL (Uniform Resource Locator) — адреса. Розробник: https://<проєкт>.vercel.app (той самий, що першим рядком README) · PM: «—» -->
 - Staging-URL: <!-- розробник: домен гілки staging у Vercel, https://….vercel.app — без параметрів після «?» · PM: «—» -->
 
 ## PM
@@ -32,15 +32,16 @@ SENTRY_AUTH_TOKEN, BACKUP_PASSPHRASE, SUPABASE_DB_URL) — лише назви �
 
 - Сховище: <!-- docs/operations.md або issue «Операційні вимоги» -->
 - Операційні вимоги: <!-- …/blob/<SHA>/docs/operations.md або …/issues/N -->
-- SLO: <!-- 2–3 рядки «SLO-1: що отримує користувач — ціль за 28 днів — де міряємо — бюджет помилок» -->
-- Матриця серйозності: <!-- «SEV1–3, по 2 приклади, хто реагує і як швидко» + якщо треба, посилання на розділ …#… -->
-- RPO і RTO: <!-- значення й одним реченням, що це означає на безкоштовному тарифі -->
+- SLO: <!-- SLO — Service Level Objective, ціль рівня сервісу. 2–3 рядки «SLO-1: що отримує користувач — ціль за 28 днів — де міряємо — бюджет помилок» -->
+- Матриця серйозності: <!-- SEV — severity, рівень серйозності. «SEV1–3, по 2 приклади, хто реагує і як швидко» + якщо треба, посилання на розділ …#… -->
+- RPO і RTO: <!-- RPO — Recovery Point Objective (скільки даних можна втратити), RTO — Recovery Time Objective
+  (скільки продукт може не працювати). Значення й одним реченням, що це означає на безкоштовному тарифі -->
 - Хто отримує алерт: <!-- канал і ролі, напр. «Telegram-група команди: розробник, PM». Без chat id, імен і телефонів -->
 - Після курсу: <!-- Pro, пауза чи архів — одним реченням -->
 
 ### Приймання релізу (трек B)
 
-- Сценарій demo day для UAT: <!-- 5–8 кроків одним рядком або посилання на розділ …/blob/<SHA>/docs/demo-day.md -->
+- Сценарій demo day для UAT: <!-- UAT — User Acceptance Testing, приймальне тестування. 5–8 кроків одним рядком або посилання на розділ …/blob/<SHA>/docs/demo-day.md -->
 - UAT на staging: <!-- на кожного розробника команди з «реліз-кандидат на staging» один рядок:
      «@<dev>: staging https://….vercel.app, сценарій ✅, підпис https://github.com/<dev>/<team-slug>/pull/N#issuecomment-M»
      або «@<dev>: ❌ крок N → https://github.com/<dev>/<team-slug>/issues/M, підпис …#issuecomment-K»
@@ -75,10 +76,10 @@ SENTRY_AUTH_TOKEN, BACKUP_PASSPHRASE, SUPABASE_DB_URL) — лише назви �
 - Гілка `staging`: <!-- https://github.com/<я>/<team-slug>/tree/staging -->
 - Зміни з `main` у `staging`: <!-- PR чи merge: …/pull/N або …/commit/<sha> -->
 - Змінна лише для гілки `staging`: <!-- назва і де її видно, напр. «APP_ENV — поле appEnv у /api/health на staging». Значень секретів не пишемо -->
-- Проєкт Supabase для staging: <!-- назва проєкту, напр. «leave-portal-staging»; supabaseRef staging: <ref>; supabaseRef проду: <ref> — мають бути різні. Ref не секрет; ключів і рядків підключення не пишемо -->
-- Міграції в базу staging через CI: <!-- прогін CI на main …/actions/runs/N: job міграцій staging друкує «Ціль міграцій: проєкт <ref> (staging)» (той самий ref, що вище), крок «Apply migrations» — success; файл …/blob/<SHA>/.github/workflows/ci.yml#L<N> -->
+- Проєкт Supabase для staging: <!-- назва проєкту, напр. «leave-portal-staging»; supabaseRef staging: <ref>; supabaseRef проду: <ref> — мають бути різні. Ref (reference — короткий ідентифікатор проєкту Supabase з його адреси) не секрет; ключів і рядків підключення не пишемо -->
+- Міграції в базу staging через CI: <!-- CI — continuous integration, автоматичні перевірки й кроки в GitHub Actions. Прогін CI на main …/actions/runs/N: job міграцій staging друкує «Ціль міграцій: проєкт <ref> (staging)» (той самий ref, що вище), крок «Apply migrations» — success; файл …/blob/<SHA>/.github/workflows/ci.yml#L<N> -->
 - Workflow smoke деплою: <!-- …/blob/<SHA>/.github/workflows/smoke.yml — адреса з client_payload.url, заголовок x-vercel-protection-bypass із секрету -->
-- Зелений smoke на деплой staging: <!-- …/actions/runs/N — у журналі JSON health з "appEnv":"staging" і supabaseRef staging -->
+- Зелений smoke на деплой staging: <!-- …/actions/runs/N — у журналі JSON (JavaScript Object Notation — текстовий формат даних) health з "appEnv":"staging" і supabaseRef staging -->
 - Smoke на деплой одного PR-preview: <!-- …/actions/runs/N — у журналі supabaseRef staging (preview теж ходить у базу staging, а не в прод) -->
 - Доступ PM до staging: <!-- спосіб (запит доступу / спільне посилання / захист вимкнено — відкриває всі preview) і де це в runbook: …/blob/<SHA>/docs/runbook.md#… -->
 - Реліз `v1.0.0`: <!-- https://github.com/<я>/<team-slug>/releases/tag/v1.0.0 -->
@@ -103,7 +104,7 @@ SENTRY_AUTH_TOKEN, BACKUP_PASSPHRASE, SUPABASE_DB_URL) — лише назви �
 
 - Сценарій: <!-- одним рядком: що зламали на staging і як, напр. «хибне значення змінної лише для гілки staging». Без міграцій і без видалення даних, прод і база проду не зачеплені -->
 - Сигнал і час: <!-- червоний smoke …/actions/runs/N чи подія трекера; поломка о HH:MM, алерт о HH:MM — від поломки до алерту N хв -->
-- Профіль «лише пропонує»: <!-- …/blob/<SHA>/.claude/settings.json (правила зі зразка materials/ops-kit/.claude/settings.incident.json; окремий файл профілю в .claude/ — теж можна) — інструменти запису MCP Vercel і Supabase заборонені поіменно -->
+- Профіль «лише пропонує»: <!-- …/blob/<SHA>/.claude/settings.json (правила зі зразка materials/ops-kit/.claude/settings.incident.json; окремий файл профілю в .claude/ — теж можна) — інструменти запису MCP (Model Context Protocol — спосіб дати агенту інструменти сервісу) Vercel і Supabase заборонені поіменно -->
 - MCP-конфіг: <!-- …/blob/<SHA>/.mcp.json — Vercel і, за потреби, Supabase з read_only=true і project_ref проєкту staging, без токенів; або «Supabase MCP не підключали» -->
 - Стенограма розбору: <!-- …/blob/<SHA>/docs/incidents/<YYYY-MM-DD>-<slug>-rca.md (назва може бути інша) — дослівно, із заголовком: дата, модель, профіль, що агент міг і чого не міг -->
 - Виправлення людиною, не агентом: <!-- …/pull/N або …/commit/<sha> -->

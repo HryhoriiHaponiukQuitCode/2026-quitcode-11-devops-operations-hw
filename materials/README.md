@@ -1,16 +1,16 @@
 # Матеріали WS11
 
 Два набори для копіювання: **набір розробника** `ops-kit/` (копіюється у ваше репо `<dev>/<team-slug>`) і **набір
-PM** `pm-kit/` (шаблони документів для репо вимог `<pm>/<team-slug>-spec`). Кожен має власний README: що в
+PM** (project manager — менеджер проєкту) `pm-kit/` (шаблони документів для репо вимог `<pm>/<team-slug>-spec`). Кожен має власний README: що в
 наборі, як підключити і як перевірити.
 
 | Тека | Що це | Для чого в домашці | Що потрібно |
 |---|---|---|---|
 | [`ops-kit/`](ops-kit/README.md) | smoke кожного деплою з обходом захисту й алертом, ланцюг постачання (`dependabot.yml`, `.npmrc`), нотатки релізу, структурований журнал і `llm.call` з тестом, `onRequestError` без Sentry, профіль Claude Code «лише пропонує», шаблони runbook, postmortem і стенограми розбору, бонусні workflow | трек розробника A–D і бонус | ваші Vercel, Supabase і GitHub; бот Telegram (чи інший канал команди); для бонусу-асистента — ваш ключ моделі |
-| [`pm-kit/`](pm-kit/README.md) | шаблони операційних вимог, повідомлення клієнту про інцидент, чекліста demo day і записки про вартість | трек PM A–C | вебінтерфейс GitHub; за бажанням — AI-чат |
+| [`pm-kit/`](pm-kit/README.md) | шаблони операційних вимог, повідомлення клієнту про інцидент, чекліста demo day і записки про вартість | трек PM A–C | вебінтерфейс GitHub; за бажанням — AI-чат (AI — artificial intelligence, штучний інтелект) |
 
-**Взяли файл з матеріалів — напишіть в описі PR «взято з <посилання на файл>».** Інфраструктуру (workflow, логер,
-профіль, шаблони) брати можна. **Runbook, postmortem, SLO, матриця серйозності й записка про вартість — про ваш
+**Взяли файл з матеріалів — напишіть в описі PR (pull request — запит на злиття змін) «взято з <посилання на файл>».** Інфраструктуру (workflow, логер,
+профіль, шаблони) брати можна. **Runbook, postmortem, SLO (Service Level Objective — ціль рівня сервісу), матриця серйозності й записка про вартість — про ваш
 продукт:** перенесені без змін, вони нічого не доводять і не зараховуються.
 
 ## Набір розробника: що куди
@@ -25,12 +25,12 @@ PM** `pm-kit/` (шаблони документів для репо вимог `
 | `.github/dependabot.yml` | `.github/dependabot.yml` | D | [R02](../docs/prompts.md#r02) |
 | `npmrc.add` | рядки — **дописати** в кінець вашого `.npmrc` (немає файлу — створіть) | D | [R02](../docs/prompts.md#r02) |
 | `.github/release.yml` | `.github/release.yml` — категорії нотаток релізу | A | [R13](../docs/prompts.md#r13) |
-| `src/lib/log.ts` | `src/lib/log.ts` — структурований журнал JSON з дозволеним переліком полів | B | [R07](../docs/prompts.md#r07) |
+| `src/lib/log.ts` | `src/lib/log.ts` — структурований журнал JSON (JavaScript Object Notation — текстовий формат даних) з дозволеним переліком полів | B | [R07](../docs/prompts.md#r07) |
 | `src/lib/ai/llm-log.ts` | поруч з вашою AI-функцією WS10 (у наборі WS10 — `src/lib/ai/`) | B | [R07](../docs/prompts.md#r07) |
 | `tests/llm-log.test.ts` | `tests/llm-log.test.ts` — тест «у журналі немає тексту користувача» | B | [R07](../docs/prompts.md#r07) |
 | `src/instrumentation.ts.example` | `src/instrumentation.ts` — **лише якщо ви без Sentry**: `onRequestError` шле коротке повідомлення в канал алертів | B | [R06](../docs/prompts.md#r06) |
 | `.claude/settings.incident.json` | зразок профілю «лише пропонує»: його правила — у `.claude/settings.json` вашого репо (подробиці — в `ops-kit/README.md` і [гайді інциденту](../docs/incident-guide.md)) | C | [R08](../docs/prompts.md#r08) |
-| `mcp.json.example` | MCP Vercel і Supabase (`read_only=true`) без токенів; як поєднати з вашим `.mcp.json` — в `ops-kit/README.md` | C | [R08](../docs/prompts.md#r08) |
+| `mcp.json.example` | MCP (Model Context Protocol — спосіб дати агенту інструменти сервісу) Vercel і Supabase (`read_only=true`) без токенів; як поєднати з вашим `.mcp.json` — в `ops-kit/README.md` | C | [R08](../docs/prompts.md#r08) |
 | `docs/runbook.template.md` | `docs/runbook.md` | C | [R11](../docs/prompts.md#r11) |
 | `docs/incidents/postmortem.template.md` | `docs/incidents/<YYYY-MM-DD>-<slug>.md` | C | [R10](../docs/prompts.md#r10) |
 | `docs/incidents/rca-transcript.template.md` | `docs/incidents/<YYYY-MM-DD>-<slug>-rca.md` поруч із postmortem (заголовок з шаблону + дослівний текст) | C | [R09](../docs/prompts.md#r09) |
@@ -42,7 +42,8 @@ PM** `pm-kit/` (шаблони документів для репо вимог `
 читає), [R03](../docs/prompts.md#r03) — staging: гілка, власна база, змінна для гілки, доступ PM (приклад job
 міграцій staging — [`ops-kit/ci-examples/db-deploy-staging.yml`](ops-kit/ci-examples/db-deploy-staging.yml), не
 запускали),
-[R12](../docs/prompts.md#r12) — дія з postmortem стає перевіркою в CI. Необов'язково, без балів:
+[R12](../docs/prompts.md#r12) — дія з postmortem стає перевіркою в CI (continuous integration — автоматичні перевірки кожної
+зміни). Необов'язково, без балів:
 [R19](../docs/prompts.md#r19) — аварійний вимикач для ризикової функції, [R20](../docs/prompts.md#r20) — агент як
 дашборд (стан продукту через MCP лише на читання), [R21](../docs/prompts.md#r21) — періодичний огляд експлуатації за
 розкладом ([задачі за розкладом](../docs/scheduled-tasks.md)).

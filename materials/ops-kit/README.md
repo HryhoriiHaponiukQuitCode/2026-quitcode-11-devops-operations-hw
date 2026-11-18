@@ -3,7 +3,8 @@
 Куди: нікуди не копіюється; читайте тут. Файли набору копіюйте за таблицею нижче.
 Завдання README домашки: D0, A, B, C, D і бонус треку розробника.
 Секрети (лише назви): TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, VERCEL_AUTOMATION_BYPASS_SECRET; SUPABASE_DB_URL у середовищах
-staging і production (міграції); бонус — BACKUP_PASSPHRASE, ANTHROPIC_API_KEY або CLAUDE_CODE_OAUTH_TOKEN. SENTRY_AUTH_TOKEN — лише у Vercel чи CI, якщо обрали Sentry.
+staging і production (міграції); бонус — BACKUP_PASSPHRASE, ANTHROPIC_API_KEY або CLAUDE_CODE_OAUTH_TOKEN. SENTRY_AUTH_TOKEN — лише у Vercel
+чи CI (continuous integration — автоматичні перевірки кожної зміни), якщо обрали Sentry.
 Джерело: набір ops-kit WS11; факти про сервіси — з їхньої документації, станом на 09.11.2026.
 -->
 
@@ -16,7 +17,8 @@ staging і production (міграції); бонус — BACKUP_PASSPHRASE, ANTH
 шаблони документів. Аптечка не лікує сама: ви кладете її у своє репо, підписуєте своїми назвами й перевіряєте,
 що кожен засіб справді спрацьовує.
 
-**Можна брати з посиланням на джерело.** В описі PR напишіть «взято з <посилання на файл набору>». Workflow,
+**Можна брати з посиланням на джерело.** В описі PR (pull request — запит на злиття змін) напишіть «взято з <посилання на
+файл набору>». Workflow,
 логер, профіль і шаблони — інфраструктура, її брати можна. **Runbook і postmortem — про ваш продукт:** шаблон без
 змін нічого не доводить і не зараховується.
 
@@ -24,15 +26,15 @@ staging і production (міграції); бонус — BACKUP_PASSPHRASE, ANTH
 
 | Термін | Що це | Побутова аналогія |
 |---|---|---|
-| **smoke** (димовий тест) | кілька GET-запитів до живого сайту: чи відкривається, чи є сторінка входу, чи відповідає база | увімкнути щойно полагоджений чайник і подивитися, чи не пішов дим |
+| **smoke** (димовий тест) | кілька GET-запитів (GET — запит на читання, як відкрити сторінку в браузері) до живого сайту: чи відкривається, чи є сторінка входу, чи відповідає база | увімкнути щойно полагоджений чайник і подивитися, чи не пішов дим |
 | **деплой** (deployment) | одна зібрана версія застосунку на Vercel зі своєю адресою | один надрукований тираж книжки |
 | **preview / staging** | не-прод деплої: preview — на кожну гілку чи PR, staging — постійна гілка `staging` для приймання | генеральна репетиція перед прем'єрою |
 | **захист деплоїв** (Deployment Protection) | Vercel пускає на preview і staging лише після входу у Vercel | двері зі шлагбаумом |
 | **обхід захисту** (Protection Bypass for Automation) | секрет, з яким скрипт проходить захист без входу; надсилається заголовком `x-vercel-protection-bypass` | перепустка для кур'єра |
 | **алерт** | повідомлення людині, коли перевірка червона | пожежна сигналізація, що дзвонить вам на телефон |
 | **cooldown** (пауза для нових версій) | Dependabot не пропонує версію пакета, молодшу за N днів | не їсти пиріг, поки не охолов: шкідливі версії зазвичай знаходять у перші дні |
-| **закріплення за SHA** | `uses: дія@<40 символів коміту> # vX.Y.Z` замість `@v4` | номер конкретної партії ліків замість «щось від голови» |
-| **структурований журнал** | один рядок JSON на подію з дозволеним переліком полів | бланк з графами замість вільного листа: зайве просто нікуди вписати |
+| **закріплення за SHA** (SHA — Secure Hash Algorithm; тут: 40-символьний ідентифікатор коміту) | `uses: дія@<40 символів коміту> # vX.Y.Z` замість `@v4` | номер конкретної партії ліків замість «щось від голови» |
+| **структурований журнал** | один рядок JSON (JavaScript Object Notation — текстовий формат даних) на подію з дозволеним переліком полів | бланк з графами замість вільного листа: зайве просто нікуди вписати |
 | **MCP** (Model Context Protocol) | спосіб дати агенту інструменти чужого сервісу (Vercel, Supabase) | пульт від чужого телевізора: важливо, які кнопки на ньому працюють |
 | **allow / ask / deny** | правила Claude Code: виконувати без питань / спитати вас / заборонити завжди | ключ від архіву, дзвінок охороні, замуровані двері |
 | **runbook** | інструкція «що робити, коли…», написана заздалегідь | план евакуації на стіні |
@@ -52,11 +54,11 @@ JSON не дозволяє коментарів, тому заголовки д�
 | `npmrc.add` | **дописати** рядки в кінець `.npmrc` у корені (немає — створіть) | D | — | [R02] |
 | `.github/release.yml` | `.github/release.yml` | A | — | [R13] |
 | `src/lib/log.ts` | `src/lib/log.ts` | B | — | [R07] |
-| `src/lib/ai/llm-log.ts` | `src/lib/ai/llm-log.ts` (поруч з AI-функцією WS10) | B | — | [R07] |
+| `src/lib/ai/llm-log.ts` | `src/lib/ai/llm-log.ts` (поруч з AI-функцією WS10; AI — artificial intelligence, штучний інтелект) | B | — | [R07] |
 | `tests/llm-log.test.ts` | `tests/llm-log.test.ts` | B | — | [R07] |
 | `src/instrumentation.ts.example` | `src/instrumentation.ts` — **лише без Sentry** | B | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` як змінні **Vercel**; `APP_ENV` (Vercel, лише гілка `staging`) | [R06] |
 | `.claude/settings.incident.json` | правила — у `.claude/settings.json`; файл цілком — `.claude/settings.incident.json` (див. [профіль](#профіль-лише-пропонує-c)) | C | — | [R08] |
-| `mcp.json.example` | сервери — у `.mcp.json`; або файл цілком — `.mcp.incident.json` | C | — (вхід через OAuth); `SUPABASE_PROJECT_REF` — не секрет; для дрілу — ref проєкту **staging** | [R08] |
+| `mcp.json.example` | сервери — у `.mcp.json`; або файл цілком — `.mcp.incident.json` | C | — (вхід через OAuth — Open Authorization: вхід на сайті сервісу, без токена у файлі); `SUPABASE_PROJECT_REF` — не секрет; для дрілу — ref (reference — короткий ідентифікатор проєкту Supabase з його адреси) проєкту **staging** | [R08] |
 | `docs/runbook.template.md` | `docs/runbook.md` | C, бонус | — | [R11] |
 | `docs/incidents/postmortem.template.md` | `docs/incidents/<YYYY-MM-DD>-<slug>.md` | C | — | [R10] |
 | `docs/incidents/rca-transcript.template.md` | `docs/incidents/<YYYY-MM-DD>-<slug>-rca.md` | C | — | [R09] |
@@ -77,7 +79,7 @@ JSON не дозволяє коментарів, тому заголовки д�
   пропонує план, файлів не редагує), `disableBypassPermissionsMode: "disable"` (режим «без питань» вимкнено).
   `allow` — читання (файли, `git log/show/diff/status`, `gh run/pr/issue view`, `vercel logs/inspect`, інструменти
   читання MCP Vercel і Supabase, **кожен повною назвою**). `ask` — `mcp__vercel__filter_project_envs` (уміє
-  розшифровувати значення) і `mcp__supabase__execute_sql` (довільний SQL). `deny` — `Edit`, `Write`,
+  розшифровувати значення) і `mcp__supabase__execute_sql` (довільний SQL — Structured Query Language, мова запитів до бази). `deny` — `Edit`, `Write`,
   `NotebookEdit`; читання `.env*` і `accounts.*`; команди `vercel`/`supabase`, що змінюють деплой, змінні чи базу;
   `git push`, `gh pr merge`, `gh workflow run`, `gh secret`, `gh variable`, `gh release`; усі інструменти запису й
   розкриття секретів MCP Vercel і Supabase **повними назвами**.
@@ -103,9 +105,10 @@ JSON не дозволяє коментарів, тому заголовки д�
 
 Чому так: D (ланцюг постачання) — дрібні файли, що одразу дають перший PR Dependabot з `next` ≥ 16.4.5 і закривають
 D0. A дає smoke кожного деплою — без нього B не має чого алертити. B — сигнали, без них дріл у C нічого не
-помітить. C — дріл, який перевіряє все попереднє разом. Бонус — після DoD.
+помітить. C — дріл, який перевіряє все попереднє разом. Бонус — після DoD (Definition of Done — умови «готово» для обов'язкових
+завдань).
 
-Кожен крок — окрема гілка й PR з зеленим CI. Перевірки шаблону перед кожним PR:
+Кожен крок — окрема гілка й PR з зеленим CI (continuous integration — автоматичні перевірки кожної зміни). Перевірки шаблону перед кожним PR:
 
 ```powershell
 npm test; if ($?) { npm run typecheck }; if ($?) { npm run lint }
@@ -139,7 +142,7 @@ npm test; if ($?) { npm run typecheck }; if ($?) { npm run lint }
 ### A. Smoke кожного деплою й реліз
 
 **Навіщо:** прод-smoke з D0 перевіряє лише `main`. Staging і preview теж треба перевіряти — інакше реліз-кандидат,
-який приймає PM, до PM ніхто не перевіряє.
+який приймає PM (project manager — менеджер проєкту), до PM ніхто не перевіряє.
 
 1. **`scripts/smoke.mjs`** — заміна D0-версії. Нове: якщо задано `VERCEL_AUTOMATION_BYPASS_SECRET`, кожен запит
    несе заголовок обходу; значення скрипт не друкує (у журналі лише `"bypass": true`).
@@ -188,7 +191,8 @@ npm test; if ($?) { npm run typecheck }; if ($?) { npm run lint }
 
 1. Створіть бота через @BotFather (назву команди звірте в самому BotFather) → токен у GitHub Secrets як
    `TELEGRAM_BOT_TOKEN`.
-2. Додайте бота в чат команди, де є люди; id чату дізнайтеся методом `getUpdates` з документації Telegram Bot API →
+2. Додайте бота в чат команди, де є люди; id чату дізнайтеся методом `getUpdates` з документації Telegram Bot API (Application Programming
+   Interface — програмний інтерфейс сервісу) →
    у GitHub Secrets як `TELEGRAM_CHAT_ID`. Значення ніде не записуйте.
 3. Крок алерту `if: failure()` передає значення лише через `env:`, без `set -x`. Немає секретів — крок пропускається
    з попередженням, smoke не ламається.
@@ -363,8 +367,8 @@ postmortem має посилання на прогін, деплой, коміт
 ### Бонус (+10) — одне з двох
 
 **Резервна копія і тренування відновлення** — `bonus/backup.yml` + `bonus/restore-drill.md` (там покроково).
-Безкоштовний Supabase резервних копій не дає. Workflow щоночі й вручну робить дамп закріпленою версією CLI через
-**session pooler**, шифрує `gpg` (AES-256), кладе лише зашифрований файл артефактом на 7 днів і відновлює його в
+Безкоштовний Supabase резервних копій не дає. Workflow щоночі й вручну робить дамп закріпленою версією CLI (command-line interface — інструмент командного рядка Supabase) через
+**session pooler**, шифрує `gpg` (AES-256 — Advanced Encryption Standard, стандарт шифрування з 256-бітним ключем), кладе лише зашифрований файл артефактом на 7 днів і відновлює його в
 локальну базу CI з порівнянням кількості рядків. SQL і дані в журнал не потрапляють. Секрети — у середовищі GitHub
 `production`: `BACKUP_PASSPHRASE`, `SUPABASE_DB_URL`. Відновлення схеми `auth` не відрепетирувано: якщо тренування
 падає на ній, запустіть зі `scope=public` (подробиці в `restore-drill.md`).

@@ -31,14 +31,14 @@ skills на продукті учасника не проганяли — це �
 
 | Skill | Що робить | Для якої задачі | Хто публікує | Офіційний? | Пакет для встановлення |
 |---|---|---|---|---|---|
-| `deploy-checklist` | чекліст перед релізом: CI, міграції бази, прапорці (feature flags); заздалегідь фіксує, коли робити відкат | CI/CD, чекліст релізу | Anthropic | так | [`engineering`](#anthropic-knowledge-work-plugins) |
+| `deploy-checklist` | чекліст перед релізом: CI (continuous integration — автоматичні перевірки кожної зміни), міграції бази, прапорці (feature flags); заздалегідь фіксує, коли робити відкат | CI/CD (Continuous Integration / Continuous Delivery — безперервна інтеграція і доставка), чекліст релізу | Anthropic | так | [`engineering`](#anthropic-knowledge-work-plugins) |
 | `incident-response` | веде інцидент від оцінки серйозності й статус-повідомлень до postmortem без пошуку винних | інцидент, postmortem | Anthropic | так | [`engineering`](#anthropic-knowledge-work-plugins) |
 | `debug` | дебаг у чотири кроки: відтворити, ізолювати, діагностувати, виправити — наприклад, коли щось зламалося після деплою | дебаг | Anthropic | так | [`engineering`](#anthropic-knowledge-work-plugins) |
 | `runbook` | пише runbook для чергового: точні команди, діагностика, кроки відкату, ескалація | runbook | Anthropic | так | [`operations`](#anthropic-knowledge-work-plugins) |
 | `change-request` | готує запит на зміну: аналіз впливу, план відкату, план повідомлень зацікавленим сторонам про викочування зміни | реліз, керування змінами | Anthropic | так | [`operations`](#anthropic-knowledge-work-plugins) |
 | `vercel-flags` | планує й налаштовує прапорці на Vercel: аварійний вимикач, відсоткове викочування, правила таргетингу, прибирання прапорця. Канарку деплою й blue-green **не описує**. Команди `vercel flags` виконує сам — див. [«Безпека»](#безпека-skill--це-ланцюг-постачання) | прапорці, аварійний вимикач (Vercel) | Vercel | так | [`vercel/flags`](#vercel) |
 | `deployments-cicd` | деплой, Promote, відкат на Vercel і CI-workflow для Vercel | деплой і відкат (Vercel) | Vercel | так | [`vercel@claude-plugins-official`](#vercel) |
-| `supabase-postgres-best-practices` | правила для змін у Postgres: схеми, міграції, політики RLS і їх тести, індекси | Supabase, міграції | Supabase | так | [`supabase/agent-skills`](#supabase) |
+| `supabase-postgres-best-practices` | правила для змін у Postgres: схеми, міграції, політики RLS (Row Level Security — правила доступу до рядків таблиці) і їх тести, індекси | Supabase, міграції | Supabase | так | [`supabase/agent-skills`](#supabase) |
 | `sentry-debug-issue`, `sentry-setup-releases` | знаходить помилку в Sentry, підтягує стек і контекст, допомагає виправити; налаштовує releases, щоб бачити, яка версія принесла помилку | Sentry | Sentry | так | [`sentry@claude-plugins-official`](#sentry) |
 
 ### Безпека й ланцюг постачання
@@ -55,7 +55,7 @@ skills на продукті учасника не проганяли — це �
 |---|---|---|---|---|---|
 | `systematic-debugging` | змушує агента спершу знайти корінну причину бага чи падіння тесту, а лише потім виправляти | дебаг | Jesse Vincent (obra), спільнота | ні, але є в офіційному маркетплейсі Anthropic | [`superpowers@claude-plugins-official`](#інші) |
 | `webapp-testing` | тестує локальний вебзастосунок через Playwright (автоматизований браузер): кліки, знімки екрана, журнал консолі | тестування фронтенду | Anthropic | так | [`anthropics/skills`](#інші) |
-| `documentation` | пише й оновлює технічну документацію: README, документація API, runbooks, onboarding | документація | Anthropic | так | [`engineering`](#anthropic-knowledge-work-plugins) |
+| `documentation` | пише й оновлює технічну документацію: README, документація API (Application Programming Interface — програмний інтерфейс), runbooks, onboarding | документація | Anthropic | так | [`engineering`](#anthropic-knowledge-work-plugins) |
 
 ## Як встановити
 
@@ -76,8 +76,9 @@ claude plugin install operations@knowledge-work-plugins
 
 ### Vercel
 
-`vercel-flags` — з репо [vercel/flags](https://github.com/vercel/flags) через CLI `skills`. Друга команда закріплює
-переглянутий коміт (синтаксис `@<SHA>` — з документації CLI `skills`):
+`vercel-flags` — з репо [vercel/flags](https://github.com/vercel/flags) через CLI (command-line interface — інструмент командного рядка) `skills`. Друга команда
+закріплює переглянутий коміт за його SHA (Secure Hash Algorithm — тут: 40-символьний ідентифікатор коміту; синтаксис
+`@<SHA>` — з документації CLI `skills`):
 
 ```bash
 npx skills add vercel/flags --skill vercel-flags -a claude-code

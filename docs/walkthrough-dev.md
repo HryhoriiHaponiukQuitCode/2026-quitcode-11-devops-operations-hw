@@ -6,13 +6,14 @@ staging**. Цього тижня продукт стає **експлуатов�
 через перевірене середовище, про збій першою дізнається людина з команди, а інцидент — це процедура, а не паніка:
 
 - **A** — середовища й реліз: гілка `staging` з власною базою Supabase і змінною лише для неї, міграції спершу в
-  staging через CI, smoke кожного деплою з обходом захисту, доступ PM до staging, тег `v1.0.0` після приймання PM;
-- **B** — сигнали: алерт людині з червоного smoke, трекер помилок сервера, журнал AI-функції `llm.call` без тексту
-  користувача;
+  staging через CI (continuous integration — автоматичні перевірки кожної зміни), smoke кожного деплою з обходом
+  захисту, доступ PM (project manager — менеджер проєкту) до staging, тег `v1.0.0` після приймання PM;
+- **B** — сигнали: алерт людині з червоного smoke, трекер помилок сервера, журнал AI-функції (AI, artificial
+  intelligence — штучний інтелект) `llm.call` без тексту користувача;
 - **C** — інцидент-дріл на staging: зламати → помітити сигналом → розбір агентом у профілі «лише пропонує» →
   виправити → postmortem → runbook → нова перевірка в CI;
-- **D** — ланцюг постачання: Dependabot з паузою, `.npmrc` з `min-release-age`, дії за SHA, push protection і CodeQL,
-  `next` ≥ 16.4.5.
+- **D** — ланцюг постачання: Dependabot з паузою, `.npmrc` з `min-release-age`, дії за SHA (Secure Hash Algorithm —
+  тут: повний 40-символьний ідентифікатор коміту), push protection і CodeQL, `next` ≥ 16.4.5.
 
 Бонус (необов'язково) — зашифрована копія бази з тренуванням відновлення або асистент чергового лише на читання.
 
@@ -28,7 +29,7 @@ staging**. Цього тижня продукт стає **експлуатов�
   [інцидент](incident-guide.md) · [вартість і ліміти](cost-guide.md). Тут — порядок і що робити тижнем, там — чому і
   як влаштовано. Факти про тарифи й інтерфейси — станом на 09.11.2026, про окрему базу staging — станом на 17.11.2026
   (джерела — у гайдах).
-- **Демо як зразок, а не заготовка:** гілка `ws11/operations` у демо-репо курсу ([PR #40](https://github.com/koldovsky/2026-quitcode-06-leave-portal-demo/pull/40)): smoke
+- **Демо як зразок, а не заготовка:** гілка `ws11/operations` у демо-репо курсу ([PR #40](https://github.com/koldovsky/2026-quitcode-06-leave-portal-demo/pull/40) — pull request, запит на злиття змін): smoke
   кожного деплою, алерт, `llm.call`, профіль «лише пропонує», runbook; дія з postmortem — [PR #41](https://github.com/koldovsky/2026-quitcode-06-leave-portal-demo/pull/41).
   Шаблони postmortem і runbook — у `materials/`. Runbook демо про ваш продукт нічого не доводить. **Runbook демо ще
   описує staging на прод-базі — це застаріло;** середовища й паузу Supabase пишіть за
@@ -65,7 +66,8 @@ B=https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operations
 | 6. Здача | день 6 | ~10 хв | — |
 | Бонус. Копія бази або асистент чергового | будь-коли до здачі | ~2–3 год | +10 |
 
-**Кожна задача — окремою гілкою й PR, як у WS7–WS10:** зелений CI і `quality` → `@coderabbitai review` окремим
+**Кожна задача — окремою гілкою й PR, як у WS7–WS10:** зелений CI і `quality` →
+`@coderabbitai review` окремим
 коментарем → **відповідь на кожну знахідку рецензента** (виправлення або аргумент у треді) → Squash and merge. Взяли
 файл з `materials/` — в описі PR «взято з <посилання на файл>».
 
@@ -107,7 +109,7 @@ B=https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operations
 
    | Область аудиту R01 | Крок цієї домашки | Промпт |
    |---|---|---|
-   | 1. CI/CD | 1.4 (дії за SHA, назви jobs без змін); ворота й ruleset `solo-main` — як були | R02 |
+   | 1. CI/CD (Continuous Integration / Continuous Delivery — безперервна інтеграція і доставка) | 1.4 (дії за SHA, назви jobs без змін); ворота й ruleset `solo-main` — як були | R02 |
    | 2. Середовища, змінні й секрети | 2.1–2.3, 2.6, 2.7, 2.9 (проєкт і база staging, `APP_ENV`, змінні Vercel) | R03 |
    | 3. Реліз і відкат | 5 (тег `v1.0.0`); відкат і Promote — у runbook, 4.11; прапорці — необов'язково | R13, R11, R19 |
    | 4. Health і smoke | 2.3, 2.4 (`appEnv`, `supabaseRef`, smoke кожного деплою) | R03, R04 |
@@ -160,7 +162,8 @@ B=https://raw.githubusercontent.com/koldovsky/2026-quitcode-11-devops-operations
 
 Навіщо: PM приймає реліз не на проді, а на генеральній репетиції — staging. На безкоштовному Vercel це гілка
 `staging` зі своєю адресою і своєю змінною середовища, а в Supabase — **другий проєкт** зі своєю базою: що б не
-сталося на репетиції (UAT, preview з PR, дріл), прод-дані не змінюються. Smoke тепер перевіряє кожен деплой, зокрема
+сталося на репетиції (UAT — User Acceptance Testing, приймальне тестування; preview з PR; дріл), прод-дані не
+змінюються. Smoke тепер перевіряє кожен деплой, зокрема
 staging, за адресою саме цього деплою. Як влаштовано й чому — у
 [release-guide, «Staging на Vercel Hobby»](release-guide.md#staging-на-vercel-hobby) і
 [«Staging з окремою базою»](release-guide.md#staging-з-окремою-базою); тут — порядок дій.
@@ -178,11 +181,13 @@ staging, за адресою саме цього деплою. Як влашто
 
 1. **Звільнити слот і створити проєкт staging** — [release-guide, кроки 1–2](release-guide.md#1-звільнити-слот).
    Зайвий проєкт (найчастіше двійник WS9) — на **паузу**, не видаляти; прод не чіпати. Новий проєкт
-   `<team-slug>-staging` у тому самому регіоні, налаштування Data API як у проді. Забрати в менеджер паролів: адресу,
+   `<team-slug>-staging` у тому самому регіоні, налаштування Data API (API, Application Programming Interface —
+   програмний інтерфейс сервісу) як у проді. Забрати в менеджер паролів: адресу,
    publishable і secret key, рядок Session pooler (порт 5432) — **цілком з проєкту staging**, не правлячи прод-рядок.
    Одразу ж **Auth staging, частина 1** ([крок 6](release-guide.md#6-auth-у-проєкті-staging)): налаштування як у проді;
-   Redirect URLs — `https://*-<scope>.vercel.app/**` і `http://localhost:3000/**`.
-2. **GitHub: environment `staging`, секрет і змінні з ref** —
+   Redirect URLs (URL — Uniform Resource Locator, адреса; тут — дозволені адреси повернення після входу) —
+   `https://*-<scope>.vercel.app/**` і `http://localhost:3000/**`.
+2. **GitHub: environment `staging`, секрет і змінні з ref** (ref, reference — короткий ідентифікатор проєкту Supabase з його адреси, не секрет) —
    [крок 3](release-guide.md#3-github-environment-staging-секрет-і-змінні-з-ref). New environment `staging`, Deployment
    branches: **Selected branches and tags** → правило для гілки `main`; секрет `SUPABASE_DB_URL` = рядок staging;
    Repository variables `SUPABASE_STAGING_REF` і `SUPABASE_PROD_REF`. `SUPABASE_DB_URL` — не серед Repository secrets.
@@ -215,7 +220,8 @@ staging, за адресою саме цього деплою. Як влашто
      назви перевірте в інтерфейсі). Там же подивіться, чи ввімкнено Vercel Authentication: у WS6 `bootstrap.md` радив
      її вимкнути. Якщо вмикаєте — режим **Standard Protection** (прод-домени лишаються відкритими: D0 і перевірка курсу
      читають прод без входу), не All Deployments.
-   - Значення — у GitHub Secrets, з терміналу (CLI спитає значення, в історію команд воно не потрапить):
+   - Значення — у GitHub Secrets, з терміналу через GitHub CLI `gh` (CLI, command-line interface — інструмент
+     командного рядка): він спитає значення, і в історію команд воно не потрапить:
 
      ```powershell
      gh secret set VERCEL_AUTOMATION_BYPASS_SECRET
@@ -257,8 +263,9 @@ staging, за адресою саме цього деплою. Як влашто
     `"appEnv":"staging"`, `"db":"ok"` і `supabaseRef` — ref **staging**. На проді — без `"staging"` і з ref проду.
     Увійдіть на staging акаунтом з `accounts.zip`.
 11. **Зелений smoke на деплой staging і на PR-preview:** Actions → smoke → прогін, запущений подією
-    `repository_dispatch` для деплою `staging`. У журналі видно адресу staging і JSON health з `supabaseRef` staging, а
-    значення секрету — ні. Червоний через стіну входу Vercel — секрет не задано чи задано з помилкою в назві. Те саме
+    `repository_dispatch` для деплою `staging`. У журналі видно адресу staging і JSON (JavaScript Object Notation —
+    текстовий формат даних) health з `supabaseRef` staging, а значення секрету — ні. Червоний через стіну входу
+    Vercel — секрет не задано чи задано з помилкою в назві. Те саме
     знайдіть для деплою будь-якого PR після кроку 7: `supabaseRef` теж staging.
 12. **Доступ PM до staging.** На Hobby три варіанти: запит доступу (один зовнішній користувач на акаунт Hobby), спільне
     посилання (одне на акаунт) або вимкнений захист preview. Порівняння — у
@@ -276,7 +283,8 @@ staging, за адресою саме цього деплою. Як влашто
     ```
 
     `--ff-only` відмовить, якщо в `staging` є коміти, яких немає в `main`, — так і має бути. Схему бази staging
-    оновлює CI ще на злитті в `main` (крок 3), тож після ff код і схема staging збігаються.
+    оновлює CI ще на злитті в `main` (крок 3), тож після ff (fast-forward — гілка просто «наздоганяє» `main`, без
+    коміту злиття) код і схема staging збігаються.
 14. **Прод-Auth — лише прод-адреси.** У прод-проєкті Supabase → Authentication → URL Configuration приберіть
     `localhost`, preview-wildcard і адресу staging, якщо вони там є: preview і локальна розробка тепер ходять у
     staging (точні назви перевірте в інтерфейсі).
@@ -363,12 +371,13 @@ staging, за адресою саме цього деплою. Як влашто
 
 **До поломки** (журнали Vercel на Hobby живуть годину — налаштовувати посеред дрілу пізно):
 
-1. **Профіль «лише пропонує»** — промпт [R08 «Профіль «лише пропонує» (.claude/settings.json, MCP)»](prompts.md#r08).
-   Зразки — `materials/ops-kit/.claude/settings.incident.json` і `mcp.json.example`; як їх поєднати з вашими
+1. **Профіль «лише пропонує»** — промпт [R08 «Профіль «лише пропонує» (.claude/settings.json, MCP)»](prompts.md#r08)
+   (MCP, Model Context Protocol — спосіб дати агенту інструменти зовнішнього сервісу). Зразки — `materials/ops-kit/.claude/settings.incident.json` і `mcp.json.example`; як їх поєднати з вашими
    `.claude/settings.json` і `.mcp.json` — у [README набору](../materials/ops-kit/README.md). Рубрика дивиться на
    правила в `.claude/settings.json`; заборони запису нічого не ламають і в щоденній роботі. PR → злиття.
-2. **MCP Vercel** (вхід через OAuth, токенів у файлах немає). Якщо сервера `vercel` ще немає у вашому `.mcp.json`
-   після кроку 1 — додайте його в проєкт:
+2. **MCP Vercel.** Вхід через
+   OAuth (Open Authorization — вхід через ваш акаунт сервісу в браузері), токенів у файлах немає. Якщо сервера `vercel`
+   ще немає у вашому `.mcp.json` після кроку 1 — додайте його в проєкт:
 
    ```powershell
    claude mcp add --scope project --transport http vercel https://mcp.vercel.com
@@ -386,7 +395,8 @@ staging, за адресою саме цього деплою. Як влашто
    зараховує.
 
 **Дріл** — варіант A з [гайду інциденту, «Дріл»](incident-guide.md#дріл-як-зламати-безпечно): хибне значення змінної
-лише для гілки `staging`. Час записуйте в одному поясі (журнали Vercel — в UTC) і вкажіть, у якому.
+лише для гілки `staging`. Час записуйте в одному поясі (журнали Vercel — в UTC, Coordinated Universal Time —
+всесвітній час; Київ = UTC+2 взимку) і вкажіть, у якому.
 
 4. **Зламати (T0).** Vercel → Settings → Environment Variables → змінна Supabase з префіксом `NEXT_PUBLIC_` для
    **Preview, гілка `staging`** з хибним значенням (не інший справжній ключ — наприклад, змініть один символ): нове
@@ -394,7 +404,8 @@ staging, за адресою саме цього деплою. Як влашто
    Ключі в Supabase **не чіпайте**: ротація ключа staging зупинила б UAT і всі preview, а дріл тренує сигнал. →
    Deployments → останній деплой `staging` → Redeploy (змінні `NEXT_PUBLIC_` вбудовуються під час збірки). T0 — коли
    деплой став Ready.
-5. **Сигнал (T1).** Smoke деплою staging червоний (`/api/health` → 503) → повідомлення в Telegram. Запишіть час
+5. **Сигнал (T1).** Smoke деплою staging червоний (`/api/health` → 503, Service Unavailable — сервіс недоступний) →
+   повідомлення в Telegram. Запишіть час
    повідомлення. Чекали довше 10 хвилин, а сигналу немає — це вже знахідка для postmortem.
 6. **Зберегти докази — у першу годину.** В issue дрілу: посилання на червоний прогін, id чи адреса деплою staging,
    відповідь `<staging>/api/health`, рядки журналу з помилкою (без даних користувачів і секретів), знімок алерту.

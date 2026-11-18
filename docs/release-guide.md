@@ -3,8 +3,9 @@
 **Середовище** (environment) — окрема копія застосунку зі своєю адресою і своїми налаштуваннями, де зміну можна
 подивитися до того, як її побачать користувачі. **Реліз** (release) — домовленість «ось ця версія готова», з номером і
 списком змін. **Ланцюг постачання** (supply chain) — усе чуже, з чого складається ваш продукт: пакети npm, дії GitHub
-Actions, інструменти в CI. Цей гайд — про те, як на безкоштовних Vercel Hobby, Supabase Free і GitHub Free провести
-зміну через перевірене середовище, поставити тег `v1.0.0` і не впустити в репо шкідливий пакет.
+Actions, інструменти в CI (continuous integration — автоматичні перевірки кожної зміни). Цей гайд — про те, як на
+безкоштовних Vercel Hobby, Supabase Free і GitHub Free провести зміну через перевірене середовище, поставити тег
+`v1.0.0` і не впустити в репо шкідливий пакет.
 
 Корисні посилання: [README, трек розробника](../README.md#трек-розробника--100--10-балів) ·
 [покроково](walkthrough-dev.md) · [промпти R01–R04, R13](prompts.md#r01) ·
@@ -18,15 +19,17 @@ Actions, інструменти в CI. Цей гайд — про те, як н�
 
 ## Навіщо в роботі
 
-Зміна, яка йде на прод без перевіреного середовища, означає, що PM приймає не те, що побачить клієнт: «у мене на
-preview працювало» — не доказ для релізу. Staging і тег `v1.0.0` дають одну відповідь на питання «що саме зараз у
+Зміна, яка йде на прод без перевіреного середовища, означає, що PM (project manager — менеджер проєкту) приймає не
+те, що побачить клієнт: «у мене на preview працювало» — не доказ для релізу. Staging і тег `v1.0.0` дають одну
+відповідь на питання «що саме зараз у
 клієнта». А кожен чужий пакет у `package.json` — ваша відповідальність: шкідлива версія з npm потрапляє на прод
 так само, як ваш власний код, тому оновлення мають бути контрольованими, а не «коли згадали».
 
 ## Чотири середовища
 
-Аналогія — театр. **Local** — репетиція вдома перед дзеркалом. **Preview** — прогін однієї сцени: кожен PR отримує
-власну адресу. **Staging** — генеральна репетиція в костюмах на справжній сцені: увесь реліз-кандидат цілком, і його
+Аналогія — театр. **Local** — репетиція вдома перед дзеркалом. **Preview** — прогін однієї сцени: кожен PR (pull
+request — запит на злиття змін) отримує власну адресу. **Staging** — генеральна репетиція в костюмах на справжній
+сцені: увесь реліз-кандидат цілком, і його
 приймає PM. **Production** — прем'єра з глядачами.
 
 | Середовище | Звідки береться | Адреса | Хто дивиться | База Supabase |
@@ -34,7 +37,7 @@ preview працювало» — не доказ для релізу. Staging і
 | **Local** | `npm run dev` на вашому комп'ютері | `http://localhost:3000` | ви | **проєкт staging** (`.env.local` = ключі staging) |
 | **Preview** | кожен push у гілку чи PR | своя на кожен деплой | ви, CodeRabbit, PM за посиланням | **проєкт staging** |
 | **Staging** | гілка `staging` | стабільна адреса гілки | PM приймає реліз-кандидат | **проєкт staging** |
-| **Production** | гілка `main` | прод-URL з першого рядка README | користувачі, клієнт, demo day | **прод-проєкт** |
+| **Production** | гілка `main` | прод-URL (URL — Uniform Resource Locator, адреса) з першого рядка README | користувачі, клієнт, demo day | **прод-проєкт** |
 
 Чим staging відрізняється від preview: адреса **не змінюється** від деплою до деплою (PM зберігає її в закладках),
 у staging є **власні змінні середовища**, і туди потрапляє лише те, що вже злито в `main`. Preview — чернетка одного
@@ -63,14 +66,15 @@ Supabase.** Проєкт Supabase, міграції й змінні бази —
    Новий домен спершу прив'язується до гілки за замовчуванням, тому його треба відредагувати.
 3. **Змінна лише для гілки.** Settings → Environment Variables → нова змінна, середовище **Preview**, гілка
    **`staging`**. Наприклад, `APP_ENV=staging`. Така змінна перекриває однойменну змінну Preview лише для цієї гілки.
-   З терміналу (Vercel CLI ≥ 64.6.0, станом на 17.11.2026): `vercel env add APP_ENV --environment preview --git-branch
+   З терміналу (Vercel CLI — command-line interface, інструмент командного рядка; версія ≥ 64.6.0, станом на
+   17.11.2026): `vercel env add APP_ENV --environment preview --git-branch
    staging` ([Vercel CLI: env](https://vercel.com/docs/cli/env)).
 4. **Передеплой.** Змінні застосовуються **лише до нових деплоїв**
    ([Vercel: Environment Variables](https://vercel.com/docs/environment-variables)). Після зміни змінної зробіть
    новий push у `staging` чи Redeploy.
 5. **Покажіть, що це staging і яка база.** На staging системна змінна `VERCEL_ENV` все одно дорівнює `preview`, тому
    D0 `/api/health` сам staging не відрізнить. Додайте у відповідь `/api/health` назву середовища з `APP_ENV` і поле
-   `supabaseRef` — ref проєкту Supabase з `NEXT_PUBLIC_SUPABASE_URL` (обидва значення не секрети). Назву середовища
+   `supabaseRef` — ref (reference — короткий ідентифікатор) проєкту Supabase з `NEXT_PUBLIC_SUPABASE_URL` (обидва значення не секрети). Назву середовища
    рубрика A приймає й у підвалі сторінки, а `supabaseRef` — лише в health: саме за ним видно, що база окрема. Промпт —
    [R03 «Staging: гілка, власна база, змінна для гілки, доступ PM»](prompts.md#r03).
 
@@ -78,8 +82,10 @@ Supabase.** Проєкт Supabase, міграції й змінні бази —
 `staging` повз `main`; staging чи preview, що ходить у прод-базу.
 
 **Ключ OpenRouter на staging.** Якщо у WS10 ви додали `OPENROUTER_API_KEY` у Preview, staging його успадкує. Тоді
-staging витрачає ті самі 50 безкоштовних запитів на добу, що й прод і ваш eval: додаткові ключі ліміт не збільшують.
-Плануйте UAT PM на staging і живий eval на різні UTC-доби. Детальніше — у [гайді вартості](cost-guide.md).
+staging витрачає ті самі 50 безкоштовних запитів на добу, що й прод і ваш eval (evaluation — автоматична перевірка
+відповідей моделі): додаткові ключі ліміт не збільшують. Плануйте UAT (User Acceptance Testing — приймальне
+тестування) PM на staging і живий eval на різні UTC-доби (UTC, Coordinated Universal Time — всесвітній час; Київ =
+UTC+2 взимку). Детальніше — у [гайді вартості](cost-guide.md).
 
 ## Staging з окремою базою
 
@@ -98,7 +104,7 @@ staging писав у прод-базу, кожен клік PM на UAT, кож
 **Терміни.**
 
 - **Проєкт Supabase** — окрема база Postgres зі своїм Auth, своїми ключами й своєю адресою `https://<ref>.supabase.co`.
-- **ref** — короткий ідентифікатор проєкту з цієї адреси. Він не секрет: браузер і так отримує його з
+- **ref** (reference) — короткий ідентифікатор проєкту з цієї адреси. Він не секрет: браузер і так отримує його з
   `NEXT_PUBLIC_SUPABASE_URL`.
 - **Слот** — одне з двох місць під активний безкоштовний проєкт. Призупинений проєкт слота не займає.
 - **Environment у GitHub** — «сейф» для секретів: відкрити його може лише job, що на нього посилається, і лише з
@@ -115,7 +121,8 @@ staging писав у прод-базу, кожен клік PM на UAT, кож
 
 Міграції: PR → CI (`db-check` на одноразовій базі) → злиття в `main` → job **`db-deploy-staging`** (база staging) →
 лише якщо зелено, job **`db-deploy`** (прод). Дані: у проді — те, що там уже є; у staging — міграції, seed, тестові
-акаунти й тестові записи. **Прод-дані в staging не копіюємо ніколи**: ні дампом, ні експортом CSV, ні «щоб було схоже».
+акаунти й тестові записи. **Прод-дані в staging не копіюємо ніколи**: ні дампом, ні експортом CSV (comma-separated
+values — таблиця в текстовому файлі), ні «щоб було схоже».
 
 Порядок кроків нижче продиктований залежностями: база staging має бути готова (схема, акаунти, дані) **до** того, як
 на неї перемкнуться Preview; секрет і змінні в GitHub — **до** злиття job міграцій, інакше CI на `main` почервоніє;
@@ -146,7 +153,8 @@ Preview перемикаємо **до** першого деплою гілки `
 - Назва `<team-slug>-staging`, **регіон той самий, що в проду**: однакові затримки, і одна сторінка статусу стосується
   обох проєктів.
 - Пароль бази — одразу в менеджер паролів: він знадобиться для рядка підключення.
-- **Налаштування Data API — як у проді** (точні назви перемикачів перевірте в інтерфейсі). Supabase попереджає:
+- **Налаштування Data API — як у проді** (API, Application Programming Interface — програмний інтерфейс сервісу;
+  точні назви перемикачів перевірте в інтерфейсі). Supabase попереджає:
   «Default privileges differ between projects, depending on when the project was created and its Data API settings»,
   і «Supabase is changing the platform default to revoke these automatic grants so that exposure becomes opt-in»
   ([Supabase: Securing your API](https://supabase.com/docs/guides/api/securing-your-api)). Тому новий проєкт може
@@ -268,7 +276,8 @@ environment** із запобіжником ref, а не ноутбук, — з�
 | `SUPABASE_SECRET_KEY` (якщо є з WS7: запрошення через Admin API) | прод | **нічого** | **ключ staging** | нічого |
 
 **Правило секретного ключа:** прод-ключ — лише Production; ключ staging — лише гілка `staging`; у PR-preview —
-жодного `sb_secret_…`. Preview збирається з коду будь-якої гілки, а секретний ключ обходить RLS: «A secret key bypasses
+жодного `sb_secret_…`. Preview збирається з коду будь-якої гілки, а секретний ключ обходить RLS (Row Level Security —
+правила доступу до рядків таблиці): «A secret key bypasses
 every Row Level Security policy you have»
 ([Supabase: API keys](https://supabase.com/docs/guides/api/api-keys)). Це правило **замінює** вказівку WS7 «лише
 Production»: без ключа staging адмінські функції на staging впадуть з «SUPABASE_SECRET_KEY не задано», а «виправлення»
@@ -303,8 +312,9 @@ Environments — лише Pro і Enterprise ([Vercel: Environments](https://verc
 
 ### 8. Перевірка: база справді окрема
 
-1. Прод `/api/health` (GET без входу) → `supabaseRef` = ref проду.
-2. Прогін smoke на деплой `staging`: у журналі рядок JSON health з `"appEnv":"staging"` і `supabaseRef` = ref staging
+1. Прод `/api/health` (GET — запит на читання, без входу) → `supabaseRef` = ref проду.
+2. Прогін smoke на деплой `staging`: у журналі рядок JSON (JavaScript Object Notation — текстовий формат даних) health
+   з `"appEnv":"staging"` і `supabaseRef` = ref staging
    (≠ прод). `scripts/smoke.mjs` з набору вже друкує всю відповідь health.
 3. Прогін smoke на деплой **будь-якого PR-preview** після перемикання змінних: `supabaseRef` = ref staging. Без цього
    пункту перевизначення лише для гілки `staging` пройшло б перевірку, хоча PR-preview далі писали б у прод.
@@ -340,7 +350,8 @@ Environments — лише Pro і Enterprise ([Vercel: Environments](https://verc
 
 Free-проєкт засинає «after 1 week of inactivity» ([Supabase Pricing](https://supabase.com/pricing)). «A few requests a
 day is usually enough to keep a project running, though that isn't a guarantee», а запити застосунку й відкриття
-проєкту в Dashboard рахуються як активність ([Supabase KB](https://supabase.com/kb/faqs/platform/free-project-pausing)).
+проєкту в Dashboard рахуються як активність ([Supabase Knowledge
+Base](https://supabase.com/kb/faqs/platform/free-project-pausing)).
 Staging будять локальна розробка, PR-preview і smoke кожного деплою — усі вони тепер ходять у staging. Але щоденний
 розклад smoke будить лише прод. Тож правило просте: **перед UAT, демо чи дрілом відкрийте Dashboard → проєкт staging і,
 якщо він на паузі, натисніть Resume project.** Дані й налаштування повернуться
@@ -460,7 +471,8 @@ staging, — за адресою саме цього деплою. Готови�
 1. Після кожного успішного деплою Vercel надсилає у ваше репо подію `repository_dispatch` типу
    `vercel.deployment.success`. У ній (`github.event.client_payload`) — адреса деплою `url` і середовище
    ([Vercel for GitHub](https://vercel.com/docs/git/vercel-for-github#repository-dispatch-events)).
-2. **Прод-job** — як у D0, без змін у поведінці: `PROD_URL`, SHA = `main`, база відповідає.
+2. **Прод-job** — як у D0, без змін у поведінці: `PROD_URL`, SHA (Secure Hash Algorithm — тут: 40-символьний
+   ідентифікатор коміту) = `main`, база відповідає.
 3. **Новий job** — для кожного деплою не в production: бере `client_payload.url`, а не фіксовану адресу, і надсилає
    заголовок обходу із секрету `VERCEL_AUTOMATION_BYPASS_SECRET`. Без секрету — попередження в журналі
    («Немає секрету VERCEL_AUTOMATION_BYPASS_SECRET»), а за увімкненого захисту ще й червоний прогін (стіна входу
@@ -540,8 +552,8 @@ PM.
 
 | Коли | Що сталося | Як спрацювало | Що б допомогло |
 |---|---|---|---|
-| вересень 2025 | **Shai-Hulud** — «черв'як» у npm, уражено сотні пакетів ([CISA](https://www.cisa.gov/news-events/alerts/2025/09/23/widespread-supply-chain-compromise-impacting-npm-ecosystem)) | скрипт, що запускається під час `npm install`, крав токени npm і публікував заражені версії інших пакетів жертви | lockfile, `min-release-age`, обережність зі скриптами встановлення |
-| 19.03.2026 | **Trivy GitHub Action:** зловмисники з украденими обліковими даними переписали 76 із 77 тегів `trivy-action` і всі 7 тегів `setup-trivy` на шкідливі коміти ([GHSA-69fq-xp46-6x23](https://github.com/aquasecurity/trivy/security/advisories/GHSA-69fq-xp46-6x23)) | хто підключав дію **за тегом**, отримав у CI програму, що шукала ключі й секрети | закріплення дій за повним SHA; після інциденту — замінити всі секрети, до яких мав доступ CI |
+| вересень 2025 | **Shai-Hulud** — «черв'як» у npm, уражено сотні пакетів ([CISA](https://www.cisa.gov/news-events/alerts/2025/09/23/widespread-supply-chain-compromise-impacting-npm-ecosystem) — Cybersecurity and Infrastructure Security Agency, агентство кібербезпеки США) | скрипт, що запускається під час `npm install`, крав токени npm і публікував заражені версії інших пакетів жертви | lockfile, `min-release-age`, обережність зі скриптами встановлення |
+| 19.03.2026 | **Trivy GitHub Action:** зловмисники з украденими обліковими даними переписали 76 із 77 тегів `trivy-action` і всі 7 тегів `setup-trivy` на шкідливі коміти ([GHSA-69fq-xp46-6x23](https://github.com/aquasecurity/trivy/security/advisories/GHSA-69fq-xp46-6x23) — GHSA, GitHub Security Advisory: бюлетень безпеки GitHub) | хто підключав дію **за тегом**, отримав у CI програму, що шукала ключі й секрети | закріплення дій за повним SHA; після інциденту — замінити всі секрети, до яких мав доступ CI |
 | 31.03.2026 | **axios:** опубліковано заражені версії популярного пакета ([CISA](https://content.govdelivery.com/accounts/USDHSCISA/bulletins/413c7a5)) | захоплений акаунт супровідника | lockfile + `npm ci`, `min-release-age` |
 
 Спільний шаблон: шкідливу версію публікують, і її підхоплюють ті, хто ставить «найсвіжіше» автоматично. Більшість таких
