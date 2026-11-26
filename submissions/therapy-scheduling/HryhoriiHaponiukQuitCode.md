@@ -33,10 +33,10 @@
 - Сценарій demo day для UAT: планувальник входить → вставляє текст звернення й отримує чернетку картки → перевіряє поля й створює картку → позначає статус страхування «Verified» → утримує вільний слот терапевта за клієнтом → підтверджує утримання → терапевт входить і бачить підтверджений сеанс і лише своїх клієнтів (https://github.com/HryhoriiHaponiukQuitCode/therapy-scheduling-spec/blob/0bedb11a79441a2cc036bb6a7025420f2338ef90/docs/demo-day.md#1-сценарій-показу-з-часом)
 - UAT на staging:
   - @maryan-qc: staging https://therapy-scheduling-git-staging-mandrushchak-4349s-projects.vercel.app, сценарій ✅, підпис https://github.com/maryan-qc/therapy-scheduling/issues/75#issuecomment-7175074613
-  - @SnatchPlay: ⏳
+  - @SnatchPlay: staging https://therapy-scheduling-git-staging-snatchplays-projects.vercel.app, сценарій ✅, підпис https://github.com/SnatchPlay/therapy-scheduling/pull/102#issuecomment-7185938555
   - @pavmys: не прийнято: «реліз-кандидат на staging» не надходив; репо https://github.com/pavmys/therapy-scheduling станом на 2026-11-25 публічно недоступне (404), база проду — `"db":"down"`
-  - @markkern-hyra: не прийнято: «реліз-кандидат на staging» не надходив, гілки staging немає, 2026-11-25
-- Відхилення від вимог: відхилень немає (staging @maryan-qc, 7 кроків сценарію пройшли)
+  - @markkern-hyra: не прийнято: «реліз-кандидат на staging» не надходив, гілки staging немає, 2026-11-26
+- Відхилення від вимог: відхилень немає (staging @maryan-qc і @SnatchPlay: усі 7 кроків сценарію пройшли; у @SnatchPlay — дрібне зауваження про `role="alert"` для повідомлень про успіх, у підписі)
 - Розбір postmortem і runbook:
   - @maryan-qc: https://github.com/maryan-qc/therapy-scheduling/pull/73#issuecomment-7174684592
   - @SnatchPlay: https://github.com/SnatchPlay/therapy-scheduling/pull/100#issuecomment-7174684081
